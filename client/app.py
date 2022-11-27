@@ -2,12 +2,11 @@ import binascii
 
 import Crypto
 import Crypto.Random
-from Crypto.PublicKey import RSA
+from Crypto.PublicKey import RSA, ECC
 from flask import Flask, jsonify, request, render_template
 from flask_cors import CORS
 
 from .transaction import ClientTransaction
-
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -31,18 +30,30 @@ def view_transaction():
 
 @app.route("/wallet/new", methods=["GET"])
 def new_wallet():
-    random_gen = Crypto.Random.new().read
-    private_key = RSA.generate(1024, random_gen)
-    public_key = private_key.publickey()
+    # RSA Decryption
+    # random_gen = Crypto.Random.new().read
+    # private_key = RSA.generate(1024, random_gen)
+    # public_key = private_key.publickey()
+    # response = {
+    #     "private_key": binascii.hexlify(private_key.exportKey(format="DER")).decode(
+    #         "ascii"
+    #     ),
+    #     "public_key": binascii.hexlify(public_key.exportKey(format="DER")).decode(
+    #         "ascii"
+    #     ),
+    # }
+    key = ECC.generate(curve='P-256')
+    private_key = key.export_key(format='DER')
+    public_key = key.public_key().export_key(format='DER')
+
     response = {
-        "private_key": binascii.hexlify(private_key.exportKey(format="DER")).decode(
+        "private_key": binascii.hexlify(private_key).decode(
             "ascii"
         ),
-        "public_key": binascii.hexlify(public_key.exportKey(format="DER")).decode(
+        "public_key": binascii.hexlify(public_key).decode(
             "ascii"
         ),
     }
-
     return jsonify(response), 200
 
 

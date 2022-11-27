@@ -6,9 +6,9 @@ from urllib.parse import urlparse
 from typing import List
 import binascii
 
-from Crypto.Hash import SHA1
-from Crypto.PublicKey import RSA
-from Crypto.Signature import pkcs1_15
+from Crypto.Hash import SHA1, SHA256
+from Crypto.PublicKey import RSA, ECC
+from Crypto.Signature import pkcs1_15, DSS
 
 import requests
 
@@ -38,6 +38,12 @@ class Blockchain(object):
         return self.DIFFICULTY
 
     def add_block(self, nonce: int, previous_hash: str):
+        """
+        Adds a new block to the chain
+        :param nonce: <int> Nonce of the block
+        :param previous_hash: <str> Hash of the previous block
+        :return: <Block.__dict__> The added block in dict format
+        """
         block = Block(
             index=len(self.chain),
             nonce=nonce,
@@ -132,10 +138,14 @@ class Blockchain(object):
         signed by the public key (sender_address)
         """
         sender_address = binascii.unhexlify(parsed_sender_address)
-        public_key = RSA.importKey(sender_address)
-        verifier = pkcs1_15.new(public_key)
 
-        transaction_hash = SHA1.new(str(transaction).encode("utf8"))
+        # public_key = RSA.importKey(sender_address)
+        # verifier = pkcs1_15.new(public_key)
+        # transaction_hash = SHA1.new(str(transaction).encode("utf8"))
+
+        public_key = ECC.import_key(sender_address)
+        verifier = DSS.new(public_key, "fips-186-3")
+        transaction_hash = SHA256.new(str(transaction).encode("utf8"))
 
         return verifier.verify(transaction_hash, binascii.unhexlify(signature))
 
@@ -152,7 +162,7 @@ class Blockchain(object):
                 self.add_transaction(sender_address, receiver_address, amount)
                 return True
             except ValueError:
-                print("error")
+                print("Signature not valid!")
                 return False
 
     def valid_chain(self, chain: List[Block]) -> bool:
@@ -212,4 +222,3 @@ class Blockchain(object):
             return True
 
         return False
-    
