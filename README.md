@@ -5,19 +5,11 @@
     ````
     pip install -r requirements.txt
     ````
-2. Start blockchain locally
-   - First, configure your host and port in config.ini
-   - For each system which runs a blockchain, define a different port to ensure they can communicate
-       ````
-       [HOST]
-       host = 127.0.0.1
-       port = 5000
-       ````
-   - Start the blockchain locally
-       ````
-       python -m blockchain
-       ````
-3. Start client locally on an unused port (e.g. 3000)
+2. Start blockchain locally on an unused port (e.g. 3000)
+    ````
+    python -m blockchain <<port>>
+    ````
+3. Start client locally on an unused port (e.g. 3002)
     ````
    python -m client <<port>>
     ````
