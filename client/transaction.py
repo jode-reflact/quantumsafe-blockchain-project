@@ -1,10 +1,9 @@
 import binascii
+from collections import OrderedDict
 
 from Crypto.Hash import SHA1, SHA256
 from Crypto.PublicKey import RSA, ECC
 from Crypto.Signature import DSS, pkcs1_15
-
-from blockchain.transaction import Transaction
 
 
 class ClientTransaction:
@@ -17,8 +16,14 @@ class ClientTransaction:
     def __getattr__(self, attr):
         return self.data[attr]
 
-    def to_transaction(self):
-        return Transaction(self.sender_address, self.receiver_address, self.amount).__dict__
+    def to_dict(self):
+        return OrderedDict(
+            {
+                "sender": self.sender_address,
+                "receiver": self.receiver_address,
+                "amount": self.amount,
+            }
+        )
 
     def sign_transaction(self):
         """Sign transaction with private key"""
@@ -31,7 +36,7 @@ class ClientTransaction:
 
         private_key = ECC.import_key(binascii.unhexlify(self.sender_private_key))
         signer = DSS.new(private_key, "fips-186-3")
-        transaction_hash = SHA256.new(str(self.to_transaction()).encode("utf8"))
+        transaction_hash = SHA256.new(str(self.to_dict()).encode("utf8"))
         signature = signer.sign(transaction_hash)
 
         return binascii.hexlify(signature).decode("ascii")

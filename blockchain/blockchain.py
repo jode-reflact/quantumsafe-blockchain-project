@@ -1,5 +1,6 @@
 import hashlib
 import json
+from collections import OrderedDict
 from time import time
 from uuid import uuid4
 from urllib.parse import urlparse
@@ -12,9 +13,6 @@ from Crypto.Signature import pkcs1_15, DSS
 
 import requests
 
-from .block import Block
-from .transaction import Transaction
-
 MINING_REWARD = 1
 MINING_SENDER = "THE BLOCKCHAIN"
 
@@ -23,14 +21,14 @@ class Blockchain(object):
     DIFFICULTY = 2
 
     def __init__(self):
-        self.chain: List[Block.__dict__] = []
-        self.pending_transactions: List[Transaction.__dict__] = []
+        self.chain = []
+        self.pending_transactions = []
         self.nodes = set()
         self.node_id = str(uuid4()).replace("-", "")
         self.add_block(0, "00")
 
     @property
-    def last_block(self) -> Block.__dict__:
+    def last_block(self):
         return self.chain[-1]
 
     @property
@@ -44,46 +42,31 @@ class Blockchain(object):
         :param previous_hash: <str> Hash of the previous block
         :return: <Block.__dict__> The added block in dict format
         """
-        block = Block(
-            index=len(self.chain),
-            nonce=nonce,
-            timestamp=time(),
-            transactions=self.pending_transactions,
-            previous_hash=previous_hash
-        )
+        block = {
+            "index": len(self.chain),
+            "timestamp": time(),
+            "transactions": self.pending_transactions,
+            "nonce": nonce,
+            "previous_hash": previous_hash or self.hash(self.chain[-1]),
+        }
 
         # Reset the current list of transactions
         self.pending_transactions = []
 
-        self.chain.append(block.__dict__)
-        return block.__dict__
-
-    def add_transaction(self, sender: str, receiver: str, amount: int):
-        """
-        Creates a new transaction to go into the next mined Block
-        :param sender: <str> Address of the Sender
-        :param receiver: <str> Address of the receiver
-        :param amount: <int> Amount
-        :return: <int> The index of the Block that will hold this transaction
-        """
-        ta = Transaction(sender, receiver, amount)
-        self.pending_transactions.append(ta.__dict__)
-
-        return self.last_block["index"] + 1
+        self.chain.append(block)
+        return block
 
     @staticmethod
-    def hash(block: Block):
+    def hash(block):
         """
         Creates a SHA-256 hash of a Block
         :param block: <dict> Block
         :return: <str>
         """
-        print(block)
-        string_object = json.dumps(block, sort_keys=True)
-        block_string = string_object.encode()
+        block_string = json.dumps(block, sort_keys=True).encode()
 
-        raw_hash = hashlib.sha256(block_string)
-        hex_hash = raw_hash.hexdigest()
+        bin_hash = hashlib.sha256(block_string)
+        hex_hash = bin_hash.hexdigest()
 
         return hex_hash
 
@@ -130,9 +113,22 @@ class Blockchain(object):
         else:
             raise ValueError("Invalid URL")
 
+    def distribute_transaction(self, sender, receiver, amount, signature):
+
+        neighbours = self.nodes
+
+        transaction = {"sender": sender, "receiver": receiver, "amount": amount, "signature": signature}
+
+        for node in neighbours:
+            response = requests.post(f"http://{node}/transactions/receive",
+                                     json=transaction,
+                                     headers={ "Access-Control-Allow-Origin": "*" })
+
+            if response.status_code != 201:
+                raise ValueError("Other Node did not accept transaction")
+
     @staticmethod
-    def verify_transaction_signature(parsed_sender_address, signature,
-                                     transaction: Transaction.__dict__):
+    def verify_transaction_signature(parsed_sender_address, signature, transaction):
         """
         Check that the provided signature corresponds to transaction
         signed by the public key (sender_address)
@@ -151,7 +147,16 @@ class Blockchain(object):
 
     def submit_transaction(self, sender_address, receiver_address, amount, signature):
         """Add a transaction to transactions array if the signature verified"""
-        ta = Transaction(sender_address, receiver_address, amount).__dict__
+        ta = OrderedDict(
+            {
+                "sender": sender_address,
+                "receiver": receiver_address,
+                "amount": amount,
+            }
+        )
+
+        if ta in self.pending_transactions:
+            return True
 
         if sender_address == MINING_SENDER:
             self.pending_transactions.append(ta)
@@ -159,13 +164,14 @@ class Blockchain(object):
         else:
             try:
                 self.verify_transaction_signature(sender_address, signature, ta)
-                self.add_transaction(sender_address, receiver_address, amount)
+                self.pending_transactions.append(ta)
+                self.distribute_transaction(sender_address, receiver_address, amount, signature)
                 return True
             except ValueError:
                 print("Signature not valid!")
                 return False
 
-    def valid_chain(self, chain: List[Block]) -> bool:
+    def valid_chain(self, chain) -> bool:
         """
         Determine if a given blockchain is valid
         :param chain: <list> A blockchain
@@ -177,12 +183,20 @@ class Blockchain(object):
         while current_index < len(chain):
             current_block = chain[current_index]
 
-            if current_block.previous_hash != self.hash(last_block):
+            if current_block["previous_hash"] != self.hash(last_block):
                 return False
 
-            if not self.valid_proof(current_block.transactions,
-                                    current_block.previous_hash,
-                                    current_block.nonce):
+            transactions = current_block["transactions"][:-1]
+            transaction_elements = ["sender", "receiver", "amount"]
+            transactions = [
+                OrderedDict((k, transaction[k]) for k in transaction_elements)
+                for transaction in transactions
+            ]
+
+            if not self.valid_proof(transactions,
+                                    current_block["previous_hash"],
+                                    current_block["nonce"]):
+                print("given chain not valid")
                 return False
 
             last_block = current_block
@@ -219,6 +233,7 @@ class Blockchain(object):
         # Replace our chain if we discovered a new, valid chain longer than ours
         if new_chain:
             self.chain = new_chain
+            self.pending_transactions = []
             return True
 
         return False

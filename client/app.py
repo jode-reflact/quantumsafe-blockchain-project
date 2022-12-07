@@ -69,7 +69,7 @@ def generate_transaction():
     )
 
     response = {
-        "transaction": transaction.to_transaction(),
+        "transaction": transaction.to_dict(),
         "signature": transaction.sign_transaction(),
     }
 

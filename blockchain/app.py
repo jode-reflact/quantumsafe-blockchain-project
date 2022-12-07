@@ -48,6 +48,30 @@ def new_transaction():
         }
         return jsonify(response), 201
 
+@app.route("/transactions/receive", methods=["POST"])
+def receive_transaction():
+    values = request.get_json()
+
+    required = ["sender", "receiver", "amount", "signature"]
+    if not all(k in values for k in required):
+        return "Missing values", 400
+
+    transaction_result = blockchain.submit_transaction(
+        values["sender"],
+        values["receiver"],
+        values["amount"],
+        values["signature"],
+    )
+
+    if not transaction_result:
+        response = {"message": "Invalid Transaction!"}
+        return jsonify(response), 406
+    else:
+        response = {
+            "message": "Transaction will be added to Block " + str(transaction_result)
+        }
+        return jsonify(response), 201
+
 
 @app.route("/transactions/get", methods=["GET"])
 def get_transactions():
@@ -71,7 +95,6 @@ def mine():
     # We run the proof of work algorithm to get the next proof...
     last_block = blockchain.last_block
     nonce = blockchain.proof_of_work()
-    print(last_block)
 
     # We must receive a reward for finding the proof.
     blockchain.submit_transaction(

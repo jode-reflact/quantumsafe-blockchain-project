@@ -16,7 +16,7 @@ if __name__ == "__main__":
     PORT = int(PORT)
 
     app.run(
-        host=config.get("HOST", "host"),
+        host=config.get("CLIENT", "host"),
         port=PORT,
         debug=config.getboolean("DEBUG", "debug"),
     )
