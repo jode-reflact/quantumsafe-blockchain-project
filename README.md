@@ -20,7 +20,7 @@
    - save them to a private text editor
 2. In client frontend, create a new transaction
    - Sender address is your private key
-   - Receiver address is the recipient's private key
+   - Receiver address is the recipient's public key
 3. In blockchain frontend, mine a new block
    - The unmined transactions will be inserted into the mined block
    - The miner who serves the current chain will also get a reward from "THE BLOCKCHAIN" via transaction

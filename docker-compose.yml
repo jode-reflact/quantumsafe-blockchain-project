@@ -1,0 +1,7 @@
+services:
+  node:
+    image: python:latest
+    command: "python -m blockchain 5000"
+    ports:
+      - 1400:5000
+    working_dir: /app
