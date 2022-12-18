@@ -1,4 +1,14 @@
 # quantumsafe-blockchain-project
+
+## Build and install OpenQuantumSafe library (liboqs)
+
+### liboqs
+This project uses liboqs for quantum-safe algorithms, which needs to be build before.
+This can be done following these steps: https://github.com/open-quantum-safe/liboqs#quickstart
+### liboqs-python
+To use the C library liboqs a python-wrapper for this lib needs to be installed.
+Depending on the OS, the manual can be found here: https://github.com/open-quantum-safe/liboqs-python#installation
+
 ## Python blockchain implementation
 ### Setup
 1. Install requirements:
