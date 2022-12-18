@@ -150,8 +150,8 @@ class Blockchain(object):
         verifier = oqs.Signature(dilithium_algo)
         public_key = sender_address
         transaction_hash = SHA256.new(str(transaction).encode("utf8"))
-
-        return verifier.verify(transaction_hash, binascii.unhexlify(signature), public_key)
+        #return verifier.verify(transaction_hash, binascii.unhexlify(signature), public_key)
+        return verifier.verify(str(transaction_hash.hexdigest()).encode("utf8"), binascii.unhexlify(signature), public_key)
 
         ########################
         ## ECC

@@ -38,7 +38,8 @@ class ClientTransaction:
         signer = oqs.Signature(sign_algo, private_key)
 
         transaction_hash = SHA256.new(str(self.to_dict()).encode("utf8"))
-        signature = signer.sign(transaction_hash)
+        signature = signer.sign(str(transaction_hash.hexdigest()).encode("utf8"))
+        #signature = signer.sign(transaction_hash)
 
         return binascii.hexlify(signature).decode("ascii")
 
