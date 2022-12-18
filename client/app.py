@@ -8,6 +8,8 @@ from flask_cors import CORS
 
 from .transaction import ClientTransaction
 
+import oqs
+
 # Initialize Flask app
 app = Flask(__name__)
 CORS(app)
@@ -30,7 +32,28 @@ def view_transaction():
 
 @app.route("/wallet/new", methods=["GET"])
 def new_wallet():
-    # RSA Decryption
+
+    ###################
+    #### DILITHIUM ####
+    #
+    #
+    sign_algo = "Dilithium2"  # REPLACE WITH VARIABLE LATER TO USE DIFFERENT MODES OF DILITHIUM?!
+    signer = oqs.Signature(sign_algo)
+    public_key = signer.generate_keypair()
+    private_key = signer.export_secret_key()
+
+    response = {
+        "private_key": binascii.hexlify(private_key).decode(
+            "ascii"
+        ),
+        "public_key": binascii.hexlify(public_key).decode(
+            "ascii"
+        ),
+    }
+    
+    ##############################
+    ## RSA Decryption
+    #
     # random_gen = Crypto.Random.new().read
     # private_key = RSA.generate(1024, random_gen)
     # public_key = private_key.publickey()
@@ -42,18 +65,25 @@ def new_wallet():
     #         "ascii"
     #     ),
     # }
-    key = ECC.generate(curve='P-256')
-    private_key = key.export_key(format='DER')
-    public_key = key.public_key().export_key(format='DER')
 
-    response = {
-        "private_key": binascii.hexlify(private_key).decode(
-            "ascii"
-        ),
-        "public_key": binascii.hexlify(public_key).decode(
-            "ascii"
-        ),
-    }
+
+    ################################
+    ## ECC
+
+    # key = ECC.generate(curve='P-256')
+    # private_key = key.export_key(format='DER')
+    # public_key = key.public_key().export_key(format='DER')
+
+    # response = {
+    #     "private_key": binascii.hexlify(private_key).decode(
+    #         "ascii"
+    #     ),
+    #     "public_key": binascii.hexlify(public_key).decode(
+    #         "ascii"
+    #     ),
+    # }
+
+
     return jsonify(response), 200
 
 

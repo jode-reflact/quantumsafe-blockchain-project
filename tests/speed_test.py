@@ -8,9 +8,12 @@ import time
 import random
 import binascii
 
+import oqs
+
 class EncryptionTypes(Enum):
     RSA = "rsa"
     ECC = "ecc"
+    DIL = "dil"
 
 def generate_transaction_json(sender_address: str, sender_private_key: str, receiver_address: str,
                               amount: int):
@@ -71,6 +74,23 @@ def generate_sender_receiver_pair(encryption_type: EncryptionTypes):
             .decode("ascii")
 
         return sender_public_key_ascii, sender_private_key_ascii, receiver_public_key_ascii
+
+
+
+    if encryption_type == EncryptionTypes.DIL:
+        with oqs.Signature("Dilithium2") as signer:
+
+
+            sender_pub_key = signer.generate_keypair()
+            sender_priv_key = signer.export_secret_key()
+            sender_private_key_ascii = binascii.hexlify(sender_priv_key).decode("ascii")
+            sender_public_key_ascii = binascii.hexlify(sender_pub_key).decode("ascii")
+            
+
+            receiver_pub_key = signer.generate_keypair()
+            receiver_public_key_ascii = binascii.hexlify(receiver_pub_key).decode("ascii")
+
+            return sender_public_key_ascii, sender_private_key_ascii, receiver_public_key_ascii
 
 if __name__ == '__main__':
     sender_address, sender_private_key, receiver_address = generate_sender_receiver_pair(EncryptionTypes.ECC)

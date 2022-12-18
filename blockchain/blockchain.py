@@ -13,6 +13,8 @@ from Crypto.Signature import pkcs1_15, DSS
 
 import requests
 
+import oqs
+
 MINING_REWARD = 1
 MINING_SENDER = "THE BLOCKCHAIN"
 
@@ -135,15 +137,29 @@ class Blockchain(object):
         """
         sender_address = binascii.unhexlify(parsed_sender_address)
 
+        #################################
+        ##### RSA
         # public_key = RSA.importKey(sender_address)
         # verifier = pkcs1_15.new(public_key)
         # transaction_hash = SHA1.new(str(transaction).encode("utf8"))
 
-        public_key = ECC.import_key(sender_address)
-        verifier = DSS.new(public_key, "fips-186-3")
+        ######################
+        ###### DILITHIUM ####
+        #
+        dilithium_algo = "Dilithium2"
+        verifier = oqs.Signature(dilithium_algo)
+        public_key = sender_address
         transaction_hash = SHA256.new(str(transaction).encode("utf8"))
 
-        return verifier.verify(transaction_hash, binascii.unhexlify(signature))
+        return verifier.verify(transaction_hash, binascii.unhexlify(signature), public_key)
+
+        ########################
+        ## ECC
+        # public_key = ECC.import_key(sender_address)
+        # verifier = DSS.new(public_key, "fips-186-3")
+        # transaction_hash = SHA256.new(str(transaction).encode("utf8"))
+
+        # return verifier.verify(transaction_hash, binascii.unhexlify(signature))
 
     def submit_transaction(self, sender_address, receiver_address, amount, signature):
         """Add a transaction to transactions array if the signature verified"""
