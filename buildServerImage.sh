@@ -1,1 +1,1 @@
-docker build -t blockchain-server:latest -f Dockerfile.server .
+docker build --no-cache -t blockchain-server:latest -f Dockerfile.server .

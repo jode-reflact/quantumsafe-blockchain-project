@@ -1,18 +1,24 @@
+#FROM openquantumsafe/python:latest
 FROM python:latest
-
-#RUN apt update -y && \
-#    apt install python
 EXPOSE 80
+
+#install oqs
+RUN apt-get update
+RUN apt-get install -y astyle cmake gcc ninja-build libssl-dev python3-pytest python3-pytest-xdist unzip xsltproc doxygen graphviz python3-yaml valgrind
+RUN git clone -b main https://github.com/open-quantum-safe/liboqs.git
+RUN cd liboqs && mkdir build && cd build && cmake -GNinja .. -DBUILD_SHARED_LIBS=ON && ninja && ninja install
+ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
+RUN git clone -b main https://github.com/open-quantum-safe/liboqs-python.git && cd liboqs-python && python setup.py install
+ENV PYTHONPATH=/liboqs-python
+#RUN cd liboqs-python && python examples/kem.py
+# end of oqs installation
 
 # We copy just the requirements.txt first to leverage Docker cache
 COPY ./requirements.txt /app/requirements.txt
 
 WORKDIR /app
-
 RUN pip install -r requirements.txt
 
 COPY . /app
 
-#ENTRYPOINT [ "python" ]
-#CMD [ "python", "-m blockchain 5000"]
 CMD [ "python", "-m" , "blockchain", "80"]

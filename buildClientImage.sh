@@ -1,1 +1,1 @@
-docker build -t blockchain-client:latest -f Dockerfile.client .
+docker build --no-cache -t blockchain-client:latest -f Dockerfile.client .
