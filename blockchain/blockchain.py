@@ -168,7 +168,7 @@ class Blockchain(object):
                 "sender": sender_address,
                 "receiver": receiver_address,
                 "amount": amount,
-                "timestamp": timestamp,
+                "timestamp": timestamp
             }
         )
 
