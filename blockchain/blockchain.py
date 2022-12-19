@@ -189,7 +189,7 @@ class Blockchain(object):
             try:
                 self.verify_transaction_signature(sender_address, signature, ta)
                 self.pending_transactions.append(ta)
-                self.distribute_transaction(sender_address, receiver_address, amount, signature)
+                self.distribute_transaction(sender_address, receiver_address, amount, timestamp, signature)
                 return True
             except ValueError:
                 print("Signature not valid!")
