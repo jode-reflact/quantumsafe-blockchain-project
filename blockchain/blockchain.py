@@ -96,6 +96,7 @@ class Blockchain(object):
 
         nonce = 0
         while self.valid_proof(self.pending_transactions, last_hash, nonce) is False:
+            # lieber random zahl nehmen
             nonce += 1
 
         return nonce
