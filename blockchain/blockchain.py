@@ -116,14 +116,20 @@ class Blockchain(object):
         else:
             raise ValueError("Invalid URL")
 
-    def distribute_transaction(self, sender, receiver, amount, signature):
+    def distribute_transaction(self, sender, receiver, amount, timestamp, signature):
 
         neighbours = self.nodes
 
-        transaction = {"sender": sender, "receiver": receiver, "amount": amount, "signature": signature}
+        transaction = {
+            "sender": sender,
+            "receiver": receiver,
+            "amount": amount,
+            "timestamp": timestamp,
+            "signature": signature
+        }
 
         for node in neighbours:
-            response = requests.post(f"http://{node}/transactions/receive",
+            response = requests.post(f"http://{node}/transactions",
                                      json=transaction,
                                      headers={ "Access-Control-Allow-Origin": "*" })
 
@@ -169,7 +175,7 @@ class Blockchain(object):
                 "sender": sender_address,
                 "receiver": receiver_address,
                 "amount": amount,
-                "timestamp": timestamp,
+                "timestamp": timestamp
             }
         )
 
