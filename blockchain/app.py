@@ -24,35 +24,11 @@ def configure():
     return render_template("configure.html")
 
 
-@app.route("/transactions/new", methods=["POST"])
-def new_transaction():
-    values = request.form
-
-    required = ["sender_address", "receiver_address", "amount", "signature"]
-    if not all(k in values for k in required):
-        return "Missing values", 400
-
-    transaction_result = blockchain.submit_transaction(
-        values["sender_address"],
-        values["receiver_address"],
-        values["amount"],
-        values["signature"],
-    )
-
-    if not transaction_result:
-        response = {"message": "Invalid Transaction!"}
-        return jsonify(response), 406
-    else:
-        response = {
-            "message": "Transaction will be added to Block " + str(transaction_result)
-        }
-        return jsonify(response), 201
-
-@app.route("/transactions/receive", methods=["POST"])
+@app.route("/transactions", methods=["POST"])
 def receive_transaction():
     values = request.get_json()
 
-    required = ["sender", "receiver", "amount", "signature"]
+    required = ["sender", "receiver", "amount", "signature", "timestamp"]
     if not all(k in values for k in required):
         return "Missing values", 400
 
@@ -61,6 +37,7 @@ def receive_transaction():
         values["receiver"],
         values["amount"],
         values["signature"],
+        values["timestamp"],
     )
 
     if not transaction_result:
@@ -102,6 +79,7 @@ def mine():
         receiver_address=blockchain.node_id,
         amount=MINING_REWARD,
         signature="",
+        timestamp="",
     )
 
     # Forge the new Block by adding it to the chain

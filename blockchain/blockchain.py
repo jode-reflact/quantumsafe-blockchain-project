@@ -161,13 +161,14 @@ class Blockchain(object):
 
         # return verifier.verify(transaction_hash, binascii.unhexlify(signature))
 
-    def submit_transaction(self, sender_address, receiver_address, amount, signature):
+    def submit_transaction(self, sender_address, receiver_address, amount, signature, timestamp):
         """Add a transaction to transactions array if the signature verified"""
         ta = OrderedDict(
             {
                 "sender": sender_address,
                 "receiver": receiver_address,
                 "amount": amount,
+                "timestamp": timestamp,
             }
         )
 

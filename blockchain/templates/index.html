@@ -114,6 +114,7 @@ block content %}
         for (let i = 0; i < response["transactions"].length; i++) {
           let transaction = [
             count,
+            response["transactions"][i]["timestamp"],
             response["transactions"][i]["receiver"],
             response["transactions"][i]["sender"],
             response["transactions"][i]["amount"],
@@ -128,12 +129,13 @@ block content %}
           data: transactions,
           columns: [
             { title: "#" },
+            { title: "Timestamp" },
             { title: "Receiver Address" },
             { title: "Sender Address" },
             { title: "Amount" },
           ],
           columnDefs: [
-            { targets: [1, 2, 3], render: $.fn.dataTable.render.ellipsis(25) },
+            { targets: [1, 2, 3, 4], render: $.fn.dataTable.render.ellipsis(25) },
           ],
         });
       },
