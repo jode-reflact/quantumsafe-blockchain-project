@@ -157,7 +157,7 @@ block content %}
             <div class="col-sm-12">
               <input
                 type="text"
-                name="sender_address"
+                name="sender"
                 id="confirmation_sender_address"
                 rows="2"
                 class="form-control"
@@ -171,7 +171,7 @@ block content %}
             <div class="col-sm-12">
               <input
                 type="text"
-                name="receiver_address"
+                name="receiver"
                 id="confirmation_receiver_address"
                 rows="2"
                 class="form-control"
@@ -207,6 +207,21 @@ block content %}
               />
             </div>
           </div>
+
+          <div class="row">
+            <label class="col-sm-12">Auto generated id:</label>
+            <div class="col-sm-12">
+              <input
+                type="text"
+                name="timestamp"
+                id="timestamp"
+                rows="1"
+                class="form-control"
+                value=""
+                readonly
+              />
+            </div>
+          </div>
         </form>
 
         <div class="row">
@@ -222,6 +237,8 @@ block content %}
             />
           </div>
         </div>
+
+
       </div>
 
       <div class="modal-footer">
@@ -303,6 +320,8 @@ block content %}
             response["transaction"]["amount"];
           document.getElementById("transaction_signature").value =
             response["signature"];
+          document.getElementById("timestamp").value =
+            response["transaction"]["timestamp"];
 
           $("#basicModal").modal("show");
         },
@@ -313,14 +332,28 @@ block content %}
     });
   });
 
+  function getFormData($form){
+    var unindexed_array = $form.serializeArray();
+    var indexed_array = {};
+
+    $.map(unindexed_array, function(n, i){
+        indexed_array[n['name']] = n['value'];
+    });
+
+    return indexed_array;
+}
+
   $(function () {
     $("#button_confirm_transaction").click(function () {
+      const formJson = { ...getFormData($("#confirmation_transaction_form")) };
+      console.log(formJson);
       $.ajax({
-        url: document.getElementById("node_url").value + "/transactions/new",
+        url: document.getElementById("node_url").value + "/transactions",
         type: "POST",
         headers: { "Access-Control-Allow-Origin": "*" },
         dataType: "json",
-        data: $("#confirmation_transaction_form").serialize(),
+        contentType: "application/json",
+        data: JSON.stringify(formJson),
         success: function (response) {
           $("#transaction_form")[0].reset();
           $("#confirmation_transaction_form")[0].reset();
