@@ -116,17 +116,16 @@ class Blockchain(object):
         else:
             raise ValueError("Invalid URL")
 
-    def distribute_transaction(self, sender, receiver, amount, signature):
+    def distribute_transaction(self, sender, receiver, amount, signature, timestamp):
 
         neighbours = self.nodes
 
-        transaction = {"sender": sender, "receiver": receiver, "amount": amount, "signature": signature}
+        transaction = {"sender": sender, "receiver": receiver, "amount": amount, "signature": signature, "timestamp": timestamp}
 
         for node in neighbours:
-            response = requests.post(f"http://{node}/transactions/receive",
+            response = requests.post(f"http://{node}/transactions",
                                      json=transaction,
                                      headers={ "Access-Control-Allow-Origin": "*" })
-
             if response.status_code != 201:
                 raise ValueError("Other Node did not accept transaction")
 
@@ -183,7 +182,7 @@ class Blockchain(object):
             try:
                 self.verify_transaction_signature(sender_address, signature, ta)
                 self.pending_transactions.append(ta)
-                self.distribute_transaction(sender_address, receiver_address, amount, signature)
+                self.distribute_transaction(sender_address, receiver_address, amount, signature,timestamp)
                 return True
             except ValueError:
                 print("Signature not valid!")
