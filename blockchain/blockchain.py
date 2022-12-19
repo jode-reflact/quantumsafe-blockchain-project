@@ -6,6 +6,7 @@ from uuid import uuid4
 from urllib.parse import urlparse
 from typing import List
 import binascii
+import random
 
 from Crypto.Hash import SHA1, SHA256
 from Crypto.PublicKey import RSA, ECC
@@ -20,7 +21,7 @@ MINING_SENDER = "THE BLOCKCHAIN"
 
 
 class Blockchain(object):
-    DIFFICULTY = 2
+    DIFFICULTY = 6
 
     def __init__(self):
         self.chain = []
@@ -97,7 +98,9 @@ class Blockchain(object):
         nonce = 0
         while self.valid_proof(self.pending_transactions, last_hash, nonce) is False:
             # lieber random zahl nehmen
-            nonce += 1
+            # welche obere grenze?
+            nonce = random.randint(0, 100000000)
+            #nonce += 1
 
         return nonce
 

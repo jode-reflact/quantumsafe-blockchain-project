@@ -9,6 +9,8 @@ NUMBER_OF_CLIENTS = 5
 
 NUMBER_OF_TRANSACTIONS = 50
 
+NUMBER_OF_MINED_BLOCKS = 10
+
 STANDARD_PORT_NODE = 2000
 STANDARD_PORT_CLIENT = 3000
 
@@ -107,8 +109,6 @@ for name, value in IP_CLIENTS.items():
     ip: str = value['ip']
     port: int = value['port']
     url = 'http://localhost:'+port.__str__()+'/wallet/new'
-    print("port", port)
-    print("url", url)
     response = requests.get(url)
     print(name,response) # 200 == gut
     WALLET_CLIENTS[name] = response.json()
@@ -128,7 +128,7 @@ def sendTransaction(nodeName: str, senderClientName: str,  receiverClientName: s
     form_data['amount'] = amount
     response = requests.post(url, data=form_data)
     jsonBody = response.json()
-    print("generate transaction",response) # 200 == gut
+    #print("generate transaction",response) # 200 == gut
 
     #adding signature
     body_node = {}
@@ -137,11 +137,9 @@ def sendTransaction(nodeName: str, senderClientName: str,  receiverClientName: s
     body_node["sender"] = form_data['sender_address']
     body_node["receiver"] = form_data['receiver_address']
     body_node["amount"] = amount
-    print("body_node", body_node)
     url_node = 'http://localhost:'+node_port.__str__()+'/transactions'
     response_node = requests.post(url_node, json=body_node)
     print("send transaction to node",response_node) # 201 == gut
-    print("send transaction to node",response_node.json()) # 201 == gut
 
 # make a test transaction -> remove later
 sendTransaction('node-1', 'client-1', 'client-2', 100)
@@ -160,9 +158,8 @@ for i in range(NUMBER_OF_TRANSACTIONS):
 """
 
 # mine some blocks
-number = 10
 time_needed_seconds = 0.0
-for i in range(number):
+for i in range(NUMBER_OF_MINED_BLOCKS):
     #random_node = random.choice(list(IP_NODES.keys()))
     #node_ip = IP_NODES[random_node]['ip']
     #node_port = IP_NODES[random_node]['port']
@@ -172,7 +169,7 @@ for i in range(number):
     response_node = requests.get(url_node)
     time_needed_seconds += time.time() - start_time
     print("Time needed for block", i, time.time() - start_time)
-print("Average", time_needed_seconds / number)
+print("Average", time_needed_seconds / NUMBER_OF_MINED_BLOCKS)
 # mine genesis block on a random node (node transmits new block to all nodes --> mine battle begins)
 
 # run speed_test with random nodes and random transactions
