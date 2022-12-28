@@ -38,6 +38,15 @@ class Blockchain(object):
     def get_difficulty(self) -> int:
         return self.DIFFICULTY
 
+    def distribute_block(self):
+        neighbours = self.nodes
+
+        for node in neighbours:
+            response = requests.get(f"http://{node}/nodes/resolve",
+                                     headers={"Access-Control-Allow-Origin": "*"})
+            if response.status_code != 200:
+                raise ValueError("Other Node did not accept new block or has a longer chain!")
+
     def add_block(self, nonce: int, previous_hash: str):
         """
         Adds a new block to the chain
@@ -57,6 +66,7 @@ class Blockchain(object):
         self.pending_transactions = []
 
         self.chain.append(block)
+        self.distribute_block()
         return block
 
     @staticmethod
