@@ -120,9 +120,11 @@ def consensus():
 
     if replaced:
         response = {"message": "Our chain was replaced", "new_chain": blockchain.chain}
-    else:
-        response = {"message": "Our chain is authoritative", "chain": blockchain.chain}
-    return jsonify(response), 200
+        return jsonify(response), 200
+
+    response = {"message": "Our chain is authoritative", "chain": blockchain.chain}
+    return jsonify(response), 201
+
 
 
 @app.route("/nodes/get", methods=["GET"])
