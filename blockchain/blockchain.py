@@ -217,7 +217,7 @@ class Blockchain(object):
                 return False
 
             transactions = current_block["transactions"][:-1]
-            transaction_elements = ["sender", "receiver", "amount"]
+            transaction_elements = ["sender", "receiver", "amount",  "timestamp"]
             transactions = [
                 OrderedDict((k, transaction[k]) for k in transaction_elements)
                 for transaction in transactions

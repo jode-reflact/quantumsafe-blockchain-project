@@ -1,5 +1,6 @@
 from flask import Flask, jsonify, request, render_template
 from flask_cors import CORS
+from time import time
 
 from uuid import uuid4
 
@@ -79,7 +80,7 @@ def mine():
         receiver_address=blockchain.node_id,
         amount=MINING_REWARD,
         signature="",
-        timestamp="",
+        timestamp=time(),
     )
 
     # Forge the new Block by adding it to the chain
