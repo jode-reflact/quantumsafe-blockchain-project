@@ -106,7 +106,7 @@ class Blockchain(object):
         last_hash = self.hash(last_block)
 
         nonce = 0
-        while self.valid_proof(self.pending_transactions, last_hash, nonce) is False:
+        while self.valid_proof(self.get_pending_transactions_without_signature(), last_hash, nonce) is False:
             # lieber random zahl nehmen
             # welche obere grenze?
             nonce = random.randint(0, 100000000)
@@ -150,6 +150,14 @@ class Blockchain(object):
         """
         sender_address = binascii.unhexlify(parsed_sender_address)
 
+        # create copy of transaction without its "signature"
+        transaction = OrderedDict({
+            "sender": transaction["sender"],
+            "receiver": transaction["receiver"],
+            "amount": transaction["amount"],
+            "timestamp": transaction["timestamp"]
+        })
+
         #################################
         ##### RSA
         # public_key = RSA.importKey(sender_address)
@@ -181,7 +189,8 @@ class Blockchain(object):
                 "sender": sender_address,
                 "receiver": receiver_address,
                 "amount": amount,
-                "timestamp": timestamp
+                "timestamp": timestamp,
+                "signature": signature,
             }
         )
 
@@ -267,3 +276,11 @@ class Blockchain(object):
             return True
 
         return False
+
+    def get_pending_transactions_without_signature(self):
+        return list(map(lambda t: OrderedDict({
+            "sender": t["sender"],
+            "receiver": t["receiver"],
+            "amount": t["amount"],
+            "timestamp": t["timestamp"]
+        }), self.pending_transactions))
