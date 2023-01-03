@@ -143,12 +143,13 @@ class Blockchain(object):
                 raise ValueError("Other Node did not accept transaction")
 
     @staticmethod
-    def verify_transaction_signature(parsed_sender_address, signature, transaction):
+    def verify_transaction_signature(transaction):
         """
         Check that the provided signature corresponds to transaction
         signed by the public key (sender_address)
         """
-        sender_address = binascii.unhexlify(parsed_sender_address)
+        sender_address = binascii.unhexlify(transaction["sender"])
+        signature = transaction["signature"]
 
         # create copy of transaction without its "signature"
         transaction = OrderedDict({
@@ -202,7 +203,7 @@ class Blockchain(object):
             return len(self.chain) + 1
         else:
             try:
-                self.verify_transaction_signature(sender_address, signature, ta)
+                self.verify_transaction_signature(ta)
                 self.pending_transactions.append(ta)
                 self.distribute_transaction(sender_address, receiver_address, amount, signature, timestamp)
                 return True
@@ -226,16 +227,25 @@ class Blockchain(object):
                 return False
 
             transactions = current_block["transactions"][:-1]
+
+            # validate signature of each transaction
+            try:
+                for ta in transactions:
+                    self.verify_transaction_signature(ta)
+            except ValueError:
+                print("given chain not valid: at least one transaction signature is invalid")
+                return False
+
+            # validate proof of work
             transaction_elements = ["sender", "receiver", "amount",  "timestamp"]
             transactions = [
                 OrderedDict((k, transaction[k]) for k in transaction_elements)
                 for transaction in transactions
             ]
-
             if not self.valid_proof(transactions,
                                     current_block["previous_hash"],
                                     current_block["nonce"]):
-                print("given chain not valid")
+                print("given chain not valid: proof of work is invalid")
                 return False
 
             last_block = current_block
