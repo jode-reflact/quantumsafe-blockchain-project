@@ -78,9 +78,9 @@ def mine():
     blockchain.submit_transaction(
         sender_address=MINING_SENDER,
         receiver_address=blockchain.node_id,
-        amount=MINING_REWARD,
+        amount=str(MINING_REWARD),
         signature="",
-        timestamp=time(),
+        timestamp=str(time()),
     )
 
     # Forge the new Block by adding it to the chain
