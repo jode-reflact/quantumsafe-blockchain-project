@@ -7,6 +7,9 @@ from urllib.parse import urlparse
 from typing import List
 import binascii
 import random
+from multiprocessing import Process
+from threading import Timer
+import sys
 
 from Crypto.Hash import SHA1, SHA256
 from Crypto.PublicKey import RSA, ECC
@@ -21,14 +24,17 @@ MINING_SENDER = "THE BLOCKCHAIN"
 
 
 class Blockchain(object):
-    DIFFICULTY = 6
+    DIFFICULTY = 4
+    #DIFFICULTY = 6
 
-    def __init__(self):
+    def __init__(self, app):
+        self.app = app
         self.chain = []
         self.pending_transactions = []
         self.nodes = set()
         self.node_id = str(uuid4()).replace("-", "")
         self.add_block(0, "00")
+        #self.mine()
 
     @property
     def last_block(self):
@@ -66,6 +72,7 @@ class Blockchain(object):
         self.pending_transactions = []
 
         self.chain.append(block)
+        #self.mine()
         self.distribute_block()
         return block
 
@@ -94,7 +101,7 @@ class Blockchain(object):
 
         return guess_hash[:difficulty] == "0" * difficulty
 
-    def proof_of_work(self) -> int:
+    def proof_of_work(self):
         """
         Simple Proof of Work Algorithm:
         - Find a number p' such that hash(pp') contains leading 4
@@ -102,16 +109,12 @@ class Blockchain(object):
         - p is the previous proof, and p' is the new proof
         :return: <int>
         """
-        last_block = self.chain[-1]
-        last_hash = self.hash(last_block)
-
         nonce = 0
-        while self.valid_proof(self.pending_transactions, last_hash, nonce) is False:
+        while self.valid_proof(self.pending_transactions, self.hash(self.last_block), nonce) is False:
             # lieber random zahl nehmen
             # welche obere grenze?
             nonce = random.randint(0, 100000000)
             #nonce += 1
-
         return nonce
 
     def register_node(self, address: str) -> None:
@@ -217,7 +220,7 @@ class Blockchain(object):
                 return False
 
             transactions = current_block["transactions"][:-1]
-            transaction_elements = ["sender", "receiver", "amount",  "timestamp"]
+            transaction_elements = ["sender", "receiver", "amount", "timestamp"]
             transactions = [
                 OrderedDict((k, transaction[k]) for k in transaction_elements)
                 for transaction in transactions
@@ -263,7 +266,30 @@ class Blockchain(object):
         # Replace our chain if we discovered a new, valid chain longer than ours
         if new_chain:
             self.chain = new_chain
+            # maybe TODO: nur transaktionen aus den neuen blöcken löschen
             self.pending_transactions = []
             return True
 
         return False
+
+    def generate_block_by_nounce(self, last_block, nonce):
+        # We must receive a reward for finding the proof.
+        self.submit_transaction(
+            sender_address=MINING_SENDER,
+            receiver_address=self.node_id,
+            amount=MINING_REWARD,
+            signature="",
+            timestamp=time(),
+        )
+        # Forge the new Block by adding it to the chain
+        previous_hash = self.hash(last_block)
+        block = self.add_block(nonce, previous_hash)
+
+        return {
+            "message": "New Block Forged",
+            "block_number": block["index"],
+            "transactions": block["transactions"],
+            "nonce": block["nonce"],
+            "previous_hash": block["previous_hash"],
+        }
+
