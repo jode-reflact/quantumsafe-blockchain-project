@@ -1,6 +1,7 @@
 from flask import Flask, jsonify, request, render_template
 from flask_cors import CORS
-from time import time
+from flask_executor import Executor
+import time
 
 from uuid import uuid4
 
@@ -9,11 +10,30 @@ from .blockchain import Blockchain, MINING_REWARD, MINING_SENDER
 # Initialize Flask app
 app = Flask(__name__)
 CORS(app)
+app.config['EXECUTOR_MAX_WORKERS'] = 1
+app.config['EXECUTOR_FUTURES_MAX_LENGTH'] = 1
+executor = Executor(app)
 
 # Define blockchain Variables
-blockchain = Blockchain()
+blockchain = Blockchain(app)
 node_identifier = str(uuid4()).replace("-", "")
 
+@app.route("/mine", methods=["GET"])
+def mine():
+    mineInternal.submit_stored('mineInternal')
+    return jsonify({'scheduled': True}), 200
+
+@executor.job
+def mineInternal():
+    # We run the proof of work algorithm to get the next proof...
+    app.logger.info('mining now')
+    nonce = blockchain.proof_of_work()
+
+    blockchain.generate_block_by_nounce(blockchain.last_block, nonce)
+    mine()
+
+with app.test_request_context():
+    mine()
 
 @app.route("/")
 def index():
@@ -67,36 +87,6 @@ def full_chain():
     }
     return jsonify(response), 200
 
-
-@app.route("/mine", methods=["GET"])
-def mine():
-    # We run the proof of work algorithm to get the next proof...
-    last_block = blockchain.last_block
-    nonce = blockchain.proof_of_work()
-
-    # We must receive a reward for finding the proof.
-    blockchain.submit_transaction(
-        sender_address=MINING_SENDER,
-        receiver_address=blockchain.node_id,
-        amount=MINING_REWARD,
-        signature="",
-        timestamp=time(),
-    )
-
-    # Forge the new Block by adding it to the chain
-    previous_hash = blockchain.hash(last_block)
-    block = blockchain.add_block(nonce, previous_hash)
-
-    response = {
-        "message": "New Block Forged",
-        "block_number": block["index"],
-        "transactions": block["transactions"],
-        "nonce": block["nonce"],
-        "previous_hash": block["previous_hash"],
-    }
-    return jsonify(response), 200
-
-
 @app.route("/nodes/register", methods=["POST"])
 def register_nodes():
     values = request.form
@@ -121,6 +111,7 @@ def consensus():
 
     if replaced:
         response = {"message": "Our chain was replaced", "new_chain": blockchain.chain}
+        # was replaced, restart mining
         return jsonify(response), 200
 
     response = {"message": "Our chain is authoritative", "chain": blockchain.chain}
