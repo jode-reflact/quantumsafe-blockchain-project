@@ -165,16 +165,18 @@ block content %}
               minute: "2-digit",
               second: "2-digit",
             };
-            let date = new Date(response["chain"][i]["timestamp"] * 1000);
-            let formattedDateTime = date.toLocaleTimeString("en-us", options);
+            let blockDate = new Date(response["chain"][i]["timestamp"] * 1000);
+            let blockDateFormatted = blockDate.toISOString()//date.toLocaleTimeString("en-us", options);
 
             let transaction = [
               count,
               response["chain"][i]["transactions"][j]["receiver"],
               response["chain"][i]["transactions"][j]["sender"],
               response["chain"][i]["transactions"][j]["amount"],
-              formattedDateTime,
+              response["chain"][i]["transactions"][j]["timestamp"],
+              response["chain"][i]["transactions"][j]["signature"],
               response["chain"][i]["index"],
+              blockDateFormatted,
             ];
             transactions.push(transaction);
 
@@ -189,13 +191,15 @@ block content %}
             { title: "Receiver Address" },
             { title: "Sender Address" },
             { title: "Amount" },
-            { title: "Timestamp" },
+            { title: "T. Timestamp" },
+            { title: "T. Signature" },
             { title: "Block" },
+            { title: "B. Timestamp" },
           ],
           columnDefs: [
             {
-              targets: [1, 2, 3, 4, 5],
-              render: $.fn.dataTable.render.ellipsis(25),
+              targets: [1, 2, 3, 4, 5, 6, 7],
+              render: $.fn.dataTable.render.ellipsis(20),
             },
           ],
         });
