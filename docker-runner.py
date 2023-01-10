@@ -9,7 +9,7 @@ NUMBER_OF_CLIENTS = 5
 
 NUMBER_OF_TRANSACTIONS = 50
 
-NUMBER_OF_MINED_BLOCKS = 10
+NUMBER_OF_MINED_BLOCKS = 1
 
 STANDARD_PORT_NODE = 2000
 STANDARD_PORT_CLIENT = 3000
@@ -156,6 +156,8 @@ for i in range(NUMBER_OF_TRANSACTIONS):
     print("Random Transaction", random_node, random_sender, random_receiver, amount)
     sendTransaction(random_node, random_sender, random_receiver, amount)
 """
+
+quit()
 
 # mine some blocks
 time_needed_seconds = 0.0
