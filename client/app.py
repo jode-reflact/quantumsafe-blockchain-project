@@ -1,18 +1,25 @@
-import binascii
-
-import Crypto
-import Crypto.Random
-from Crypto.PublicKey import RSA, ECC
 from flask import Flask, jsonify, request, render_template
 from flask_cors import CORS
 
+from lib.dilithium_cipher import DilithiumCipher
+from lib.ecc_cipher import EccCipher
+from lib.rsa_cipher import RsaCipher
 from .transaction import ClientTransaction
-
-import oqs
 
 # Initialize Flask app
 app = Flask(__name__)
 CORS(app)
+
+CIPHER_TYPE = "ECC"
+
+if CIPHER_TYPE == "ECC":
+    cipher = EccCipher()
+elif CIPHER_TYPE == "RSA":
+    cipher = RsaCipher()
+elif CIPHER_TYPE == "Dilithium":
+    cipher = DilithiumCipher()
+else:
+    raise ValueError(CIPHER_TYPE + "is unknown")
 
 
 @app.route("/")
@@ -33,57 +40,11 @@ def view_transaction():
 @app.route("/wallet/new", methods=["GET"])
 def new_wallet():
 
-    ###################
-    #### DILITHIUM ####
-    #
-    #
-    sign_algo = "Dilithium2"  # REPLACE WITH VARIABLE LATER TO USE DIFFERENT MODES OF DILITHIUM?!
-    signer = oqs.Signature(sign_algo)
-    public_key = signer.generate_keypair()
-    private_key = signer.export_secret_key()
-
+    private_key, public_key = cipher.get_key_pair()
     response = {
-        "private_key": binascii.hexlify(private_key).decode(
-            "ascii"
-        ),
-        "public_key": binascii.hexlify(public_key).decode(
-            "ascii"
-        ),
+        "private_key": private_key,
+        "public_key": public_key,
     }
-    
-    ##############################
-    ## RSA Decryption
-    #
-    # random_gen = Crypto.Random.new().read
-    # private_key = RSA.generate(1024, random_gen)
-    # public_key = private_key.publickey()
-    # response = {
-    #     "private_key": binascii.hexlify(private_key.exportKey(format="DER")).decode(
-    #         "ascii"
-    #     ),
-    #     "public_key": binascii.hexlify(public_key.exportKey(format="DER")).decode(
-    #         "ascii"
-    #     ),
-    # }
-
-
-    ################################
-    ## ECC
-
-    # key = ECC.generate(curve='P-256')
-    # private_key = key.export_key(format='DER')
-    # public_key = key.public_key().export_key(format='DER')
-
-    # response = {
-    #     "private_key": binascii.hexlify(private_key).decode(
-    #         "ascii"
-    #     ),
-    #     "public_key": binascii.hexlify(public_key).decode(
-    #         "ascii"
-    #     ),
-    # }
-
-
     return jsonify(response), 200
 
 
@@ -100,7 +61,7 @@ def generate_transaction():
 
     response = {
         "transaction": transaction.to_dict(),
-        "signature": transaction.sign_transaction(),
+        "signature": cipher.sign(sender_private_key, str(transaction.to_dict())),
     }
 
     return jsonify(response), 200
