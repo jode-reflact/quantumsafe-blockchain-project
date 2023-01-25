@@ -35,6 +35,9 @@ Depending on the OS, the manual can be found here: https://github.com/open-quant
    - The unmined transactions will be inserted into the mined block
    - The miner who serves the current chain will also get a reward from "THE BLOCKCHAIN" via transaction
 
+### Architecture overview
+![The blockchain architecture](architecture-diagram.png)
+
 ### Decryption algorithms
 
 - Block Hash
