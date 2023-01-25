@@ -14,6 +14,7 @@ import sys
 from Crypto.Hash import SHA1, SHA256
 from Crypto.PublicKey import RSA, ECC
 from Crypto.Signature import pkcs1_15, DSS
+from flask import Flask
 
 import requests
 
@@ -22,18 +23,22 @@ import oqs
 MINING_REWARD = 1
 MINING_SENDER = "THE BLOCKCHAIN"
 
+CHECKED_TRANSACTIONS = 0
+
 
 class Blockchain(object):
-    DIFFICULTY = 4
-    #DIFFICULTY = 6
+    #DIFFICULTY = 4
+    DIFFICULTY = 6
 
-    def __init__(self, app):
+    def __init__(self, app: Flask):
         self.app = app
         self.chain = []
         self.pending_transactions = []
         self.nodes = set()
         self.node_id = str(uuid4()).replace("-", "")
+        app.logger.error('before genesis block')
         self.add_block(0, "00")
+        app.logger.error('after genesis block: ' +  self.chain.__str__())
         #self.mine()
 
     @property
@@ -54,6 +59,7 @@ class Blockchain(object):
                 raise ValueError("Other Node did not accept new block or has a longer chain!")
 
     def add_block(self, nonce: int, previous_hash: str):
+        self.app.logger.error('ADD BLOCK')
         """
         Adds a new block to the chain
         :param nonce: <int> Nonce of the block
@@ -146,7 +152,7 @@ class Blockchain(object):
                 raise ValueError("Other Node did not accept transaction")
 
     @staticmethod
-    def verify_transaction_signature(transaction):
+    def verify_transaction_signature(transaction, app):
         """
         Check that the provided signature corresponds to transaction
         signed by the public key (sender_address)
@@ -176,7 +182,11 @@ class Blockchain(object):
         public_key = sender_address
         transaction_hash = SHA256.new(str(transaction).encode("utf8"))
         #return verifier.verify(transaction_hash, binascii.unhexlify(signature), public_key)
-        return verifier.verify(str(transaction_hash.hexdigest()).encode("utf8"), binascii.unhexlify(signature), public_key)
+        global CHECKED_TRANSACTIONS
+        CHECKED_TRANSACTIONS = CHECKED_TRANSACTIONS + 1
+        res = verifier.verify(str(transaction_hash.hexdigest()).encode("utf8"), binascii.unhexlify(signature), public_key)
+        app.logger.error('Checked Transaction:' + CHECKED_TRANSACTIONS.__str__())
+        return res
 
         ########################
         ## ECC
@@ -206,7 +216,7 @@ class Blockchain(object):
             return len(self.chain) + 1
         else:
             try:
-                self.verify_transaction_signature(ta)
+                self.verify_transaction_signature(ta, self.app)
                 self.pending_transactions.append(ta)
                 self.distribute_transaction(sender_address, receiver_address, amount, signature, timestamp)
                 return True
@@ -234,7 +244,7 @@ class Blockchain(object):
             # validate signature of each transaction
             try:
                 for ta in transactions:
-                    self.verify_transaction_signature(ta)
+                    self.verify_transaction_signature(ta, self.app)
             except ValueError:
                 print("given chain not valid: at least one transaction signature is invalid")
                 return False
@@ -255,6 +265,20 @@ class Blockchain(object):
             current_index += 1
 
         return True
+
+    def checkPendingTransactions(self):
+        current_index = 1
+
+        while current_index < len(self.chain):
+            current_block = self.chain[current_index]
+            transactions = current_block["transactions"][:-1]
+            for ta in transactions:
+                try:
+                    # check if ordered dict is nessesary
+                    self.pending_transactions.remove(ta)
+                except:
+                    print("good")
+            current_index += 1
 
     def resolve_conflicts(self) -> bool:
         """
@@ -286,13 +310,16 @@ class Blockchain(object):
         if new_chain:
             self.chain = new_chain
             # maybe TODO: nur transaktionen aus den neuen blöcken löschen
-            self.pending_transactions = []
+            #self.pending_transactions = []
+
+            self.checkPendingTransactions()
             return True
 
         return False
 
     def generate_block_by_nounce(self, last_block, nonce):
         # We must receive a reward for finding the proof.
+        self.app.logger.error('NEW BLOCK' + nonce.__str__())
         self.submit_transaction(
             sender_address=MINING_SENDER,
             receiver_address=self.node_id,
