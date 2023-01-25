@@ -97,8 +97,8 @@ NUMBER_OF_CLIENTS = 2
 
 NUMBER_OF_TRANSACTIONS = 50
 
-IMAGE_NODE = "quantumsafeblockchain.azurecr.io/blockchain-server:v3"
-IMAGE_CLIENT = "quantumsafeblockchain.azurecr.io/blockchain-client:v2"
+IMAGE_NODE = "quantumsafeblockchain.azurecr.io/blockchain-server:v6"
+IMAGE_CLIENT = "quantumsafeblockchain.azurecr.io/blockchain-client:v3"
 
 LOCATIONS= ["westeurope", "germanywestcentral", "francecentral", "swedencentral", "northeurope", "switzerlandwest"]
 LOCATION_USED = 0
@@ -168,7 +168,7 @@ for client_i in range(NUMBER_OF_CLIENTS):
     LOCATION_USED = LOCATION_USED + 1
 print("FQDN_CLIENTS", FQDN_CLIENTS)
 if DONT_CREATE != True:
-    sleep(60 * 5)
+    sleep(60 * 2)
 """
 # remove all clients and nodes above the node / client count
 all_container = client.containers.list()
@@ -254,7 +254,7 @@ for i in range(NUMBER_OF_TRANSACTIONS):
     clients.pop(random_sender)
     random_receiver = random.choice(list(clients.keys()))
     amount = random.randint(1, 1000)
-    print("Random Transaction", random_node, random_sender, random_receiver, amount)
+    print("Random Transaction",i, random_node, random_sender, random_receiver, amount)
     sendTransaction(random_node, random_sender, random_receiver, amount)
 
 quit()

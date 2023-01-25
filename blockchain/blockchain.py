@@ -27,8 +27,8 @@ CHECKED_TRANSACTIONS = 0
 
 
 class Blockchain(object):
-    #DIFFICULTY = 4
-    DIFFICULTY = 6
+    DIFFICULTY = 5
+    #DIFFICULTY = 6
 
     def __init__(self, app: Flask):
         self.app = app
@@ -120,6 +120,8 @@ class Blockchain(object):
             # lieber random zahl nehmen
             # welche obere grenze?
             nonce = random.randint(0, 100000000)
+            if (nonce < 1000000):
+                self.app.logger.error('Still mining ' + nonce.__str__())
             #nonce += 1
         return nonce
 
