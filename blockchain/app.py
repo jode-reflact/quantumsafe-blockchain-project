@@ -10,8 +10,8 @@ from .blockchain import Blockchain, MINING_REWARD, MINING_SENDER
 # Initialize Flask app
 app = Flask(__name__)
 CORS(app)
-app.config['EXECUTOR_MAX_WORKERS'] = 1
-app.config['EXECUTOR_FUTURES_MAX_LENGTH'] = 1
+#app.config['EXECUTOR_MAX_WORKERS'] = 1
+#app.config['EXECUTOR_FUTURES_MAX_LENGTH'] = 1
 executor = Executor(app)
 
 # Define blockchain Variables

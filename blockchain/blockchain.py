@@ -27,8 +27,8 @@ CHECKED_TRANSACTIONS = 0
 
 
 class Blockchain(object):
-    DIFFICULTY = 4
-    #DIFFICULTY = 6
+    #DIFFICULTY = 5
+    DIFFICULTY = 6
 
     def __init__(self, app: Flask):
         self.app = app
