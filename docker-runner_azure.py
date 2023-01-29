@@ -68,11 +68,15 @@ def deleteAllOldContainers():
         sleep(60)
 
 def printChainLengthOfContainers():
-    data = {'node_name': [], 'chain_length': [], 'last_block_date': [], 'mean_block_time': [], 'total_transactions': []}
+    data = {'node_name': [], 'chain_length': [], 'last_block_date': [], 'mean_block_time': [], 'total_transactions': [], 'configured_nodes': []}
     for name, fqdn in FQDN_NODES.items():
         url = 'http://'+fqdn+'/chain'
         response = requests.get(url)
         jsonBody = response.json()
+        nodes_url = 'http://'+fqdn+'/nodes/get'
+        nodes_res = requests.get(nodes_url)
+        nodes_json = nodes_res.json()
+        data["configured_nodes"].append(len(nodes_json['nodes']))
         data["node_name"].append(name)
         length = int(jsonBody['length'])
         chain = jsonBody['chain']
