@@ -1,33 +1,35 @@
 import hashlib
 import json
+import os
 from collections import OrderedDict
 from time import time
 from uuid import uuid4
 from urllib.parse import urlparse
-from typing import List
 import binascii
 import random
-from multiprocessing import Process
-from threading import Timer
-import sys
+from lib import RsaCipher, EccCipher, DilithiumCipher
 
-from Crypto.Hash import SHA1, SHA256
-from Crypto.PublicKey import RSA, ECC
-from Crypto.Signature import pkcs1_15, DSS
+from Crypto.Hash import SHA256
 from flask import Flask
 
 import requests
 
-import oqs
-
 MINING_REWARD = 1
 MINING_SENDER = "THE BLOCKCHAIN"
-
 CHECKED_TRANSACTIONS = 0
 
+cipher_algorithm = os.getenv("CIPHER")
+
+if cipher_algorithm == "ecc":
+    cipher = EccCipher()
+elif cipher_algorithm == "rsa":
+    cipher = RsaCipher()
+elif cipher_algorithm == "dilithium":
+    cipher = DilithiumCipher()
+else:
+    raise ValueError(cipher_algorithm + "is unknown")
 
 class Blockchain(object):
-    #DIFFICULTY = 5
     DIFFICULTY = 6
 
     def __init__(self, app: Flask):
@@ -117,10 +119,7 @@ class Blockchain(object):
         """
         nonce = 0
         while self.valid_proof(self.get_pending_transactions_without_signature(), self.hash(self.last_block), nonce) is False:
-            # lieber random zahl nehmen
-            # welche obere grenze?
             nonce = random.randint(0, 100000000)
-            #nonce += 1
         return nonce
 
     def register_node(self, address: str) -> None:
@@ -168,33 +167,14 @@ class Blockchain(object):
             "timestamp": transaction["timestamp"]
         })
 
-        #################################
-        ##### RSA
-        # public_key = RSA.importKey(sender_address)
-        # verifier = pkcs1_15.new(public_key)
-        # transaction_hash = SHA1.new(str(transaction).encode("utf8"))
-
-        ######################
-        ###### DILITHIUM ####
-        #
-        dilithium_algo = "Dilithium2"
-        verifier = oqs.Signature(dilithium_algo)
-        public_key = sender_address
         transaction_hash = SHA256.new(str(transaction).encode("utf8"))
-        #return verifier.verify(transaction_hash, binascii.unhexlify(signature), public_key)
+
         global CHECKED_TRANSACTIONS
         CHECKED_TRANSACTIONS = CHECKED_TRANSACTIONS + 1
-        res = verifier.verify(str(transaction_hash.hexdigest()).encode("utf8"), binascii.unhexlify(signature), public_key)
         app.logger.error('Checked Transaction:' + CHECKED_TRANSACTIONS.__str__())
-        return res
-
-        ########################
-        ## ECC
-        # public_key = ECC.import_key(sender_address)
-        # verifier = DSS.new(public_key, "fips-186-3")
-        # transaction_hash = SHA256.new(str(transaction).encode("utf8"))
-
-        # return verifier.verify(transaction_hash, binascii.unhexlify(signature))
+        return cipher.verify(public_key=sender_address,
+                             message_hash=transaction_hash,
+                             signature=signature)
 
     def submit_transaction(self, sender_address, receiver_address, amount, signature, timestamp):
         """Add a transaction to transactions array if the signature verified"""
