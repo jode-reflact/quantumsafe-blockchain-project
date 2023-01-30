@@ -1,25 +1,25 @@
+import os
+
 from flask import Flask, jsonify, request, render_template
 from flask_cors import CORS
 
-from lib.dilithium_cipher import DilithiumCipher
-from lib.ecc_cipher import EccCipher
-from lib.rsa_cipher import RsaCipher
+from lib import RsaCipher, EccCipher, DilithiumCipher
 from .transaction import ClientTransaction
 
 # Initialize Flask app
 app = Flask(__name__)
 CORS(app)
 
-CIPHER_TYPE = "ECC"
+cipher_algorithm = os.getenv("CIPHER")
 
-if CIPHER_TYPE == "ECC":
+if cipher_algorithm == "ecc":
     cipher = EccCipher()
-elif CIPHER_TYPE == "RSA":
+elif cipher_algorithm == "rsa":
     cipher = RsaCipher()
-elif CIPHER_TYPE == "Dilithium":
+elif cipher_algorithm == "dilithium":
     cipher = DilithiumCipher()
 else:
-    raise ValueError(CIPHER_TYPE + "is unknown")
+    raise ValueError(cipher_algorithm + "is unknown")
 
 
 @app.route("/")

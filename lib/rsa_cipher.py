@@ -30,7 +30,7 @@ class RsaCipher(Cipher):
 
         return binascii.hexlify(signature).decode("ascii")
 
-    def verify(self, public_key: str, message_hash: SHA256Hash, signature: str):
+    def verify(self, public_key: bytes, message_hash: SHA256Hash, signature: str):
 
         verifier = pkcs1_15.new(RSA.importKey(public_key))
         return verifier.verify(message_hash, binascii.unhexlify(signature))

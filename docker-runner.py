@@ -2,7 +2,10 @@ import docker
 import requests
 import time
 import random
+
 client = docker.from_env()
+
+CIPHER = "dilithium"
 
 NUMBER_OF_NODES = 10
 NUMBER_OF_CLIENTS = 5
@@ -40,7 +43,7 @@ for node_i in range(NUMBER_OF_NODES):
             continue
         else:
             container.remove(force=True)
-    client.containers.run(image=IMAGE_NODE, detach=True, name=node_name, ports={'80/tcp': node_port})
+    client.containers.run(image=IMAGE_NODE, detach=True, name=node_name, ports={'80/tcp': node_port}, environment={"CIPHER":CIPHER})
     container = client.containers.get(node_name)
     IP_NODES[node_name] = {'ip': getIPFromContainer(container), 'port': node_port}
 print("IP_NODES", IP_NODES)
@@ -61,7 +64,7 @@ for client_i in range(NUMBER_OF_CLIENTS):
             continue
         else:
             container.remove(force=True)
-    client.containers.run(image=IMAGE_CLIENT, detach=True, name=client_name, ports={'80/tcp': client_port})
+    client.containers.run(image=IMAGE_CLIENT, detach=True, name=client_name, ports={'80/tcp': client_port}, environment={"CIPHER":CIPHER})
     time.sleep(1)
     container = client.containers.get(client_name)
     IP_CLIENTS[client_name] = {'ip' :getIPFromContainer(container), 'port': client_port}
