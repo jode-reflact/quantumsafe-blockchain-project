@@ -7,8 +7,8 @@ client = docker.from_env()
 
 CIPHER = "dilithium"
 
-NUMBER_OF_NODES = 10
-NUMBER_OF_CLIENTS = 5
+NUMBER_OF_NODES = 2
+NUMBER_OF_CLIENTS = 2
 
 NUMBER_OF_TRANSACTIONS = 50
 
@@ -59,7 +59,7 @@ for client_i in range(NUMBER_OF_CLIENTS):
         container = containerList[0]
         if len(container.image.tags) > 0 and container.image.tags[0] == IMAGE_CLIENT:
             container.restart()
-            time.sleep(1)
+            time.sleep(5)
             IP_CLIENTS[client_name] = {'ip' :getIPFromContainer(container), 'port': client_port}
             continue
         else:
@@ -147,7 +147,6 @@ def sendTransaction(nodeName: str, senderClientName: str,  receiverClientName: s
 # make a test transaction -> remove later
 sendTransaction('node-1', 'client-1', 'client-2', 100)
 
-"""
 # some more transactions
 for i in range(NUMBER_OF_TRANSACTIONS):
     random_node = random.choice(list(IP_NODES.keys()))
@@ -158,7 +157,6 @@ for i in range(NUMBER_OF_TRANSACTIONS):
     amount = random.randint(1, 1000)
     print("Random Transaction", random_node, random_sender, random_receiver, amount)
     sendTransaction(random_node, random_sender, random_receiver, amount)
-"""
 
 quit()
 
