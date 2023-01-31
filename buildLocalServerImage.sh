@@ -1,0 +1,1 @@
+docker build -t blockchain-server:latest -f Dockerfile.server .
