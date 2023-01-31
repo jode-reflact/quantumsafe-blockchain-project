@@ -36,9 +36,9 @@ class Blockchain(object):
         self.pending_transactions = []
         self.nodes = set()
         self.node_id = str(uuid4()).replace("-", "")
-        app.logger.error('before genesis block')
+        app.logger.info('before genesis block')
         self.add_block(0, "00")
-        app.logger.error('after genesis block: ' +  self.chain.__str__())
+        app.logger.info('after genesis block: ' +  self.chain.__str__())
         #self.mine()
 
     @property
@@ -59,7 +59,7 @@ class Blockchain(object):
                 raise ValueError("Other Node did not accept new block or has a longer chain!")
 
     def add_block(self, nonce: int, previous_hash: str):
-        self.app.logger.error('ADD BLOCK')
+        self.app.logger.info('ADD BLOCK')
         """
         Adds a new block to the chain
         :param nonce: <int> Nonce of the block
@@ -185,7 +185,7 @@ class Blockchain(object):
         global CHECKED_TRANSACTIONS
         CHECKED_TRANSACTIONS = CHECKED_TRANSACTIONS + 1
         res = verifier.verify(str(transaction_hash.hexdigest()).encode("utf8"), binascii.unhexlify(signature), public_key)
-        app.logger.error('Checked Transaction:' + CHECKED_TRANSACTIONS.__str__())
+        app.logger.info('Checked Transaction:' + CHECKED_TRANSACTIONS.__str__())
         return res
 
         ########################
@@ -266,19 +266,23 @@ class Blockchain(object):
 
         return True
 
-    def checkPendingTransactions(self):
+    def checkPendingTransactions(self, tempTransactions: list):
         current_index = 1
 
+        # TODO: optimize code
         while current_index < len(self.chain):
             current_block = self.chain[current_index]
             transactions = current_block["transactions"][:-1]
             for ta in transactions:
                 try:
                     # check if ordered dict is nessesary
-                    self.pending_transactions.remove(ta)
+                    tempTransactions.remove(ta)
                 except:
                     print("good")
             current_index += 1
+        # add remaining transactions to pending transactions
+        for tempTa in tempTransactions:
+            self.pending_transactions.append(tempTa)
 
     def resolve_conflicts(self) -> bool:
         """
@@ -311,15 +315,16 @@ class Blockchain(object):
             self.chain = new_chain
             # maybe TODO: nur transaktionen aus den neuen blöcken löschen
             #self.pending_transactions = []
-
-            self.checkPendingTransactions()
+            temp = self.pending_transactions.copy()
+            self.pending_transactions = []
+            self.checkPendingTransactions(temp)
             return True
 
         return False
 
     def generate_block_by_nounce(self, last_block, nonce):
         # We must receive a reward for finding the proof.
-        self.app.logger.error('NEW BLOCK' + nonce.__str__())
+        self.app.logger.info('NEW BLOCK' + nonce.__str__())
         self.submit_transaction(
             sender_address=MINING_SENDER,
             receiver_address=self.node_id,
