@@ -145,7 +145,7 @@ def sendTransaction(nodeName: str, senderClientName: str,  receiverClientName: s
     print("send transaction to node",response_node) # 201 == gut
 
 # make a test transaction -> remove later
-sendTransaction('node-1', 'client-1', 'client-2', 100)
+# sendTransaction('node-1', 'client-1', 'client-2', 100)
 
 # some more transactions
 for i in range(NUMBER_OF_TRANSACTIONS):
@@ -157,22 +157,3 @@ for i in range(NUMBER_OF_TRANSACTIONS):
     amount = random.randint(1, 1000)
     print("Random Transaction", random_node, random_sender, random_receiver, amount)
     sendTransaction(random_node, random_sender, random_receiver, amount)
-
-quit()
-
-# mine some blocks
-time_needed_seconds = 0.0
-for i in range(NUMBER_OF_MINED_BLOCKS):
-    #random_node = random.choice(list(IP_NODES.keys()))
-    #node_ip = IP_NODES[random_node]['ip']
-    #node_port = IP_NODES[random_node]['port']
-    node_port = 2001
-    url_node = 'http://localhost:'+node_port.__str__()+'/mine'
-    start_time = time.time()
-    response_node = requests.get(url_node)
-    time_needed_seconds += time.time() - start_time
-    print("Time needed for block", i, time.time() - start_time)
-print("Average", time_needed_seconds / NUMBER_OF_MINED_BLOCKS)
-# mine genesis block on a random node (node transmits new block to all nodes --> mine battle begins)
-
-# run speed_test with random nodes and random transactions

@@ -26,8 +26,11 @@ def mine():
 def mineInternal():
     # We run the proof of work algorithm to get the next proof...
     app.logger.error('mining now')
-    nonce = blockchain.proof_of_work()
-    block = blockchain.generate_block_by_nounce(blockchain.last_block, nonce)
+
+    transactions = blockchain.get_transactions_for_next_block()
+
+    nonce = blockchain.proof_of_work(transactions)
+    block = blockchain.generate_block_by_nounce(blockchain.last_block, nonce, transactions)
 
     app.logger.error('New block ' + block['block_number'].__str__())
     mine()

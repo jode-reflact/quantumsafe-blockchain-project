@@ -8,6 +8,7 @@ from urllib.parse import urlparse
 import binascii
 import random
 from lib import RsaCipher, EccCipher, DilithiumCipher
+from typing import List
 
 from Crypto.Hash import SHA256
 from flask import Flask
@@ -29,8 +30,10 @@ elif cipher_algorithm == "dilithium":
 else:
     raise ValueError(cipher_algorithm + "is unknown")
 
+
 class Blockchain(object):
-    DIFFICULTY = 6
+    DIFFICULTY = 4
+    BLOCK_SIZE = 9
 
     def __init__(self, app: Flask):
         self.app = app
@@ -39,7 +42,7 @@ class Blockchain(object):
         self.nodes = set()
         self.node_id = str(uuid4()).replace("-", "")
         app.logger.info('before genesis block')
-        self.add_block(0, "00")
+        self.add_block(0, "00", [])
         app.logger.info('after genesis block: ' +  self.chain.__str__())
         #self.mine()
 
@@ -60,7 +63,7 @@ class Blockchain(object):
             if response.status_code != 200:
                 raise ValueError("Other Node did not accept new block or has a longer chain!")
 
-    def add_block(self, nonce: int, previous_hash: str):
+    def add_block(self, nonce: int, previous_hash: str, transactions: List):
         self.app.logger.info('ADD BLOCK')
         """
         Adds a new block to the chain
@@ -68,16 +71,27 @@ class Blockchain(object):
         :param previous_hash: <str> Hash of the previous block
         :return: <Block.__dict__> The added block in dict format
         """
+
+        if len(self.pending_transactions) == 0:
+            transactions_with_reward = []
+        else:
+            reward_transaction = next(t for t in self.pending_transactions if t["sender"] == MINING_SENDER)
+            transactions_with_reward = transactions.copy()
+            transactions_with_reward.append(reward_transaction)
+
         block = {
             "index": len(self.chain),
             "timestamp": time(),
-            "transactions": self.pending_transactions,
+            "transactions": transactions_with_reward,
             "nonce": nonce,
             "previous_hash": previous_hash or self.hash(self.chain[-1]),
         }
 
-        # Reset the current list of transactions
-        self.pending_transactions = []
+        # Update pending transactions
+        self.pending_transactions = list(
+            filter(lambda t: (t not in transactions) and (t["sender"] != MINING_SENDER),
+                   self.pending_transactions)
+        )
 
         self.chain.append(block)
         #self.mine()
@@ -99,17 +113,19 @@ class Blockchain(object):
         return hex_hash
 
     @staticmethod
-    def valid_proof(pending_transactions, last_hash, nonce, difficulty=DIFFICULTY):
+    def valid_proof(transactions, last_hash, nonce, difficulty=DIFFICULTY):
         """
         Check if a hash value satisfies the mining conditions. This function is used within the
         proof_of_work function.
         """
-        guess = (str(pending_transactions) + str(last_hash) + str(nonce)).encode()
+
+        transactions_without_signature = Blockchain.get_transactions_without_signature(transactions)
+        guess = (str(transactions_without_signature) + str(last_hash) + str(nonce)).encode()
         guess_hash = hashlib.sha256(guess).hexdigest()
 
         return guess_hash[:difficulty] == "0" * difficulty
 
-    def proof_of_work(self):
+    def proof_of_work(self, transactions: List) -> int:
         """
         Simple Proof of Work Algorithm:
         - Find a number p' such that hash(pp') contains leading 4
@@ -118,8 +134,9 @@ class Blockchain(object):
         :return: <int>
         """
         nonce = 0
-        while self.valid_proof(self.get_first_n_pending_transactions_without_signature(n=10), self.hash(self.last_block), nonce) is False:
+        while self.valid_proof(transactions, self.hash(self.last_block), nonce) is False:
             nonce = random.randint(0, 100000000)
+        self.app.logger.info("nonce " + str(nonce))
         return nonce
 
     def register_node(self, address: str) -> None:
@@ -302,7 +319,7 @@ class Blockchain(object):
 
         return False
 
-    def generate_block_by_nounce(self, last_block, nonce):
+    def generate_block_by_nounce(self, last_block, nonce, transactions: List):
         # We must receive a reward for finding the proof.
         self.app.logger.info('NEW BLOCK' + nonce.__str__())
         self.submit_transaction(
@@ -314,7 +331,7 @@ class Blockchain(object):
         )
         # Forge the new Block by adding it to the chain
         previous_hash = self.hash(last_block)
-        block = self.add_block(nonce, previous_hash)
+        block = self.add_block(nonce, previous_hash, transactions)
 
         return {
             "message": "New Block Forged",
@@ -324,17 +341,16 @@ class Blockchain(object):
             "previous_hash": block["previous_hash"],
         }
 
-    def get_pending_transactions_without_signature(self):
+    def get_transactions_for_next_block(self):
+        return self.pending_transactions[:self.BLOCK_SIZE]
+
+    @staticmethod
+    def get_transactions_without_signature(transactions):
         return list(map(lambda t: OrderedDict({
             "sender": t["sender"],
             "receiver": t["receiver"],
             "amount": t["amount"],
             "timestamp": t["timestamp"]
-        }), self.pending_transactions))
-    def get_first_n_pending_transactions_without_signature(self, n:int):
-        return list(map(lambda t: OrderedDict({
-            "sender": t["sender"],
-            "receiver": t["receiver"],
-            "amount": t["amount"],
-            "timestamp": t["timestamp"]
-        }), self.pending_transactions[:n]))
+        }), transactions))
+
+
