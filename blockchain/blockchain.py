@@ -263,23 +263,17 @@ class Blockchain(object):
 
         return True
 
-    def checkPendingTransactions(self, tempTransactions: list):
-        current_index = 1
+    def update_pending_transactions(self):
+        confirmed_transactions = []
 
-        # TODO: optimize code
-        while current_index < len(self.chain):
-            current_block = self.chain[current_index]
-            transactions = current_block["transactions"][:-1]
-            for ta in transactions:
-                try:
-                    # check if ordered dict is nessesary
-                    tempTransactions.remove(ta)
-                except:
-                    print("good")
-            current_index += 1
-        # add remaining transactions to pending transactions
-        for tempTa in tempTransactions:
-            self.pending_transactions.append(tempTa)
+        for index in range(1, len(self.chain)):
+            block = self.chain[index]
+            transactions = block["transactions"][:-1]
+
+            confirmed_transactions.extend(transactions)
+
+        # remove confirmed transactions from pending transactions
+        self.pending_transactions = [t for t in self.pending_transactions if t not in confirmed_transactions]
 
     def resolve_conflicts(self) -> bool:
         """
@@ -310,11 +304,7 @@ class Blockchain(object):
         # Replace our chain if we discovered a new, valid chain longer than ours
         if new_chain:
             self.chain = new_chain
-            # maybe TODO: nur transaktionen aus den neuen blöcken löschen
-            #self.pending_transactions = []
-            temp = self.pending_transactions.copy()
-            self.pending_transactions = []
-            self.checkPendingTransactions(temp)
+            self.update_pending_transactions()
             return True
 
         return False
