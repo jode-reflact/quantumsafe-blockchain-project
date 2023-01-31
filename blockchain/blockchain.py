@@ -118,7 +118,7 @@ class Blockchain(object):
         :return: <int>
         """
         nonce = 0
-        while self.valid_proof(self.get_pending_transactions_without_signature(), self.hash(self.last_block), nonce) is False:
+        while self.valid_proof(self.get_first_n_pending_transactions_without_signature(n=10), self.hash(self.last_block), nonce) is False:
             nonce = random.randint(0, 100000000)
         return nonce
 
@@ -331,3 +331,10 @@ class Blockchain(object):
             "amount": t["amount"],
             "timestamp": t["timestamp"]
         }), self.pending_transactions))
+    def get_first_n_pending_transactions_without_signature(self, n:int):
+        return list(map(lambda t: OrderedDict({
+            "sender": t["sender"],
+            "receiver": t["receiver"],
+            "amount": t["amount"],
+            "timestamp": t["timestamp"]
+        }), self.pending_transactions[:n]))
