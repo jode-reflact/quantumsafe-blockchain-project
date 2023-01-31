@@ -264,6 +264,9 @@ class Blockchain(object):
         return True
 
     def update_pending_transactions(self):
+        pending_transactions_copy = self.pending_transactions
+        self.pending_transactions = []
+
         confirmed_transactions = []
 
         for index in range(1, len(self.chain)):
@@ -273,7 +276,7 @@ class Blockchain(object):
             confirmed_transactions.extend(transactions)
 
         # remove confirmed transactions from pending transactions
-        self.pending_transactions = [t for t in self.pending_transactions if t not in confirmed_transactions]
+        self.pending_transactions = [t for t in pending_transactions_copy if t not in confirmed_transactions]
 
     def resolve_conflicts(self) -> bool:
         """
