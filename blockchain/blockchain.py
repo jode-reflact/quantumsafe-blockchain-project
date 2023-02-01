@@ -67,35 +67,27 @@ class Blockchain(object):
         self.app.logger.info('ADD BLOCK')
         """
         Adds a new block to the chain
+        :param transactions: <List> transactions to be added to this block
         :param nonce: <int> Nonce of the block
         :param previous_hash: <str> Hash of the previous block
         :return: <Block.__dict__> The added block in dict format
         """
-
-        if len(self.pending_transactions) == 0:
-            transactions_with_reward = []
-        else:
-            reward_transaction = next(t for t in self.pending_transactions if t["sender"] == MINING_SENDER)
-            transactions_with_reward = transactions.copy()
-            transactions_with_reward.append(reward_transaction)
-
         block = {
             "index": len(self.chain),
             "timestamp": time(),
-            "transactions": transactions_with_reward,
+            "transactions": transactions,
             "nonce": nonce,
             "previous_hash": previous_hash or self.hash(self.chain[-1]),
         }
 
         # Update pending transactions
         self.pending_transactions = list(
-            filter(lambda t: (t not in transactions) and (t["sender"] != MINING_SENDER),
-                   self.pending_transactions)
+            filter(lambda t: t not in transactions, self.pending_transactions)
         )
 
         self.chain.append(block)
-        #self.mine()
         self.distribute_block()
+
         return block
 
     @staticmethod
@@ -199,6 +191,9 @@ class Blockchain(object):
 
     def submit_transaction(self, sender_address, receiver_address, amount, signature, timestamp):
         """Add a transaction to transactions array if the signature verified"""
+
+        # TODO: check if transaction is already in chain?
+
         ta = OrderedDict(
             {
                 "sender": sender_address,
@@ -251,11 +246,6 @@ class Blockchain(object):
                 return False
 
             # validate proof of work
-            transaction_elements = ["sender", "receiver", "amount",  "timestamp"]
-            transactions = [
-                OrderedDict((k, transaction[k]) for k in transaction_elements)
-                for transaction in transactions
-            ]
             if not self.valid_proof(transactions,
                                     current_block["previous_hash"],
                                     current_block["nonce"]):
@@ -275,6 +265,7 @@ class Blockchain(object):
 
         for index in range(1, len(self.chain)):
             block = self.chain[index]
+            # reward should not be considered
             transactions = block["transactions"][:-1]
 
             confirmed_transactions.extend(transactions)
@@ -318,14 +309,17 @@ class Blockchain(object):
 
     def generate_block_by_nounce(self, last_block, nonce, transactions: List):
         # We must receive a reward for finding the proof.
-        self.app.logger.info('NEW BLOCK' + nonce.__str__())
-        self.submit_transaction(
-            sender_address=MINING_SENDER,
-            receiver_address=self.node_id,
-            amount=MINING_REWARD,
-            signature="",
-            timestamp=time(),
+        reward_transaction = OrderedDict(
+            {
+                "sender": MINING_SENDER,
+                "receiver": self.node_id,
+                "amount": MINING_REWARD,
+                "timestamp": time(),
+                "signature": "",
+            }
         )
+        transactions.append(reward_transaction)
+
         # Forge the new Block by adding it to the chain
         previous_hash = self.hash(last_block)
         block = self.add_block(nonce, previous_hash, transactions)
