@@ -125,7 +125,7 @@ class Blockchain(object):
 
         return guess_hash[:difficulty] == "0" * difficulty
 
-    def proof_of_work(self, transactions: List) -> int:
+    def proof_of_work(self) -> (int, List):
         """
         Simple Proof of Work Algorithm:
         - Find a number p' such that hash(pp') contains leading 4
@@ -134,10 +134,14 @@ class Blockchain(object):
         :return: <int>
         """
         nonce = 0
+        transactions = self.get_transactions_for_next_block()
         while self.valid_proof(transactions, self.hash(self.last_block), nonce) is False:
             nonce = random.randint(0, 100000000)
+            transactions = self.get_transactions_for_next_block()
+
         self.app.logger.info("nonce " + str(nonce))
-        return nonce
+
+        return nonce, transactions
 
     def register_node(self, address: str) -> None:
         """
