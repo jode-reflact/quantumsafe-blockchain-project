@@ -2,6 +2,7 @@ import hashlib
 import json
 import os
 from collections import OrderedDict
+from threading import Event, Thread
 from time import time
 from uuid import uuid4
 from urllib.parse import urlparse
@@ -30,6 +31,20 @@ elif cipher_algorithm == "dilithium":
 else:
     raise ValueError(cipher_algorithm + "is unknown")
 
+shouldStopMining = Event()
+
+class BaseThread(Thread):
+    def __init__(self, callback=None, callback_args=None, *args, **kwargs):
+        target = kwargs.pop('target')
+        super(BaseThread, self).__init__(target=self.target_with_callback, *args, **kwargs)
+        self.callback = callback
+        self.method = target
+        self.callback_args = callback_args
+
+    def target_with_callback(self):
+        last_block, nonce, transactions = self.method()
+        if self.callback is not None:
+            self.callback(last_block, nonce, transactions)
 
 class Blockchain(object):
     DIFFICULTY = 4
@@ -44,7 +59,7 @@ class Blockchain(object):
         app.logger.info('before genesis block')
         self.add_block(0, "00", [])
         app.logger.info('after genesis block: ' +  self.chain.__str__())
-        #self.mine()
+        self.mine()
 
     @property
     def last_block(self):
@@ -54,6 +69,15 @@ class Blockchain(object):
     def get_difficulty(self) -> int:
         return self.DIFFICULTY
 
+    def mine(self):
+        # example using BaseThread with callback
+        thread = BaseThread(
+            name='Thread1',
+            target=self.proof_of_work,
+            callback=self.generate_block_by_nounce
+        )
+        thread.start()
+
     def distribute_block(self):
         neighbours = self.nodes
 
@@ -61,7 +85,7 @@ class Blockchain(object):
             response = requests.get(f"http://{node}/nodes/resolve",
                                      headers={"Access-Control-Allow-Origin": "*"})
             if response.status_code != 200:
-                raise ValueError("Other Node did not accept new block or has a longer chain!")
+                print("Other Node did not accept new block or has a longer chain!")
 
     def add_block(self, nonce: int, previous_hash: str, transactions: List):
         self.app.logger.info('ADD BLOCK')
@@ -117,7 +141,7 @@ class Blockchain(object):
 
         return guess_hash[:difficulty] == "0" * difficulty
 
-    def proof_of_work(self) -> (int, List):
+    def proof_of_work(self):
         """
         Simple Proof of Work Algorithm:
         - Find a number p' such that hash(pp') contains leading 4
@@ -125,15 +149,18 @@ class Blockchain(object):
         - p is the previous proof, and p' is the new proof
         :return: <int>
         """
+        print("PROOF OF WORK START")
         nonce = 0
         transactions = self.get_transactions_for_next_block()
         while self.valid_proof(transactions, self.hash(self.last_block), nonce) is False:
+            if shouldStopMining.is_set():
+                return self.last_block, -1, []
             nonce = random.randint(0, 100000000)
             transactions = self.get_transactions_for_next_block()
-
+        print("Nonce Found", nonce)
         self.app.logger.info("nonce " + str(nonce))
 
-        return nonce, transactions
+        return self.last_block, nonce, transactions
 
     def register_node(self, address: str) -> None:
         """
@@ -308,6 +335,7 @@ class Blockchain(object):
         return False
 
     def generate_block_by_nounce(self, last_block, nonce, transactions: List):
+        print("generate_block_by_nounce START")
         # We must receive a reward for finding the proof.
         reward_transaction = OrderedDict(
             {
@@ -324,6 +352,7 @@ class Blockchain(object):
         previous_hash = self.hash(last_block)
         block = self.add_block(nonce, previous_hash, transactions)
 
+        self.mine()
         return {
             "message": "New Block Forged",
             "block_number": block["index"],
@@ -343,5 +372,3 @@ class Blockchain(object):
             "amount": t["amount"],
             "timestamp": t["timestamp"]
         }), transactions))
-
-

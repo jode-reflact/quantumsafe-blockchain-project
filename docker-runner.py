@@ -10,7 +10,7 @@ CIPHER = "dilithium"
 NUMBER_OF_NODES = 2
 NUMBER_OF_CLIENTS = 2
 
-NUMBER_OF_TRANSACTIONS = 50
+NUMBER_OF_TRANSACTIONS = 2000
 
 NUMBER_OF_MINED_BLOCKS = 1
 
@@ -96,6 +96,8 @@ def getIPOfOtherNodes(node_name):
     node_values = nodes.values()
     ips = [node['ip'] for node in node_values]
     return ips
+
+time.sleep(5)
 
 # connect nodes to each other
 for name, value in IP_NODES.items():

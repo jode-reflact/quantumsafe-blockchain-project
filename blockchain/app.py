@@ -1,3 +1,4 @@
+import logging
 from flask import Flask, jsonify, request, render_template
 from flask_cors import CORS
 from flask_executor import Executor
@@ -8,6 +9,8 @@ from .blockchain import Blockchain
 
 # Initialize Flask app
 app = Flask(__name__)
+#log = logging.getLogger('werkzeug')
+#log.setLevel(logging.WARN)
 CORS(app)
 #app.config['EXECUTOR_MAX_WORKERS'] = 1
 #app.config['EXECUTOR_FUTURES_MAX_LENGTH'] = 1
@@ -17,6 +20,8 @@ executor = Executor(app)
 blockchain = Blockchain(app)
 node_identifier = str(uuid4()).replace("-", "")
 
+
+"""
 @app.route("/mine", methods=["GET"])
 def mine():
     mineInternal.submit_stored('mineInternal')
@@ -35,7 +40,7 @@ def mineInternal():
 
 with app.test_request_context():
     mine()
-
+"""
 @app.route("/")
 def index():
     return render_template("index.html")
