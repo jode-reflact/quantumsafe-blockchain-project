@@ -3,3 +3,4 @@ Flask_Cors==3.0.10
 flask-executor==1.0.0
 pycryptodome==3.15.0
 requests==2.28.1
+SQLAlchemy==2.0.2
