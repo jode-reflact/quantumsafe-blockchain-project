@@ -42,9 +42,6 @@ if __name__ == "__main__":
     db_name = f"node_{str(PORT)}.db"
 
     app = create_app()
-
-    # absolute_db_path = os.path.join(os.getcwd(), "node", "instance", db_name)
-    # if not os.path.isfile(absolute_db_path):
     setup_database(app)
 
     app.run(
