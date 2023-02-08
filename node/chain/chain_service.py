@@ -14,15 +14,15 @@ class ChainService:
     def resolve_conflicts(other_chain):
         own_chain = ChainService.get_chain()
 
-        # save computational cost and create instance after this check        if own_chain is not None and len(own_chain.blocks) >= len(other_chain["blocks"]):
+        # save computational cost and create instance after this check
+        if own_chain is not None and len(own_chain.blocks) >= len(other_chain["blocks"]):
             return
 
         # create instances of class Chain
         other_chain = Chain.from_json(other_chain)
 
         try:
-            other_chain.validate()
-        except Exception:
+            other_chain.validate()        except Exception:
             print("Other Chain is not valid")
             return
 
