@@ -1,10 +1,5 @@
-import hashlib
-import json
-
 from node.database import db
 from node.block.block_model import Block
-
-DIFFICULTY = 3
 
 
 class Chain(db.Model):
@@ -40,46 +35,15 @@ class Chain(db.Model):
         """
         last_block = self.blocks[0]
         index = 1
-
+        # Since our first block (with index 0) is the genesis block,
+        # we start with validating the second block (with index 1).
         while index < self.length:
             current_block = self.blocks[index]
 
             if current_block.previous_hash != self.hash(last_block):
                 raise Exception(f"Previous Hash of Block {index} is not valid.")
 
-            # validate transactions signatures
-            # omit last transaction of block since it is the reward transaction
-            transactions = current_block.transactions[:-1]
-
-            for t in transactions:
-                t.verify()
-
-            # validate proof of work
-            Chain.validate_pow(transactions, current_block.previous_hash, current_block.nonce)
+            current_block.validate()
 
             last_block = current_block
             index += 1
-
-    @staticmethod
-    def validate_pow(transactions, previous_hash, nonce):
-        guess = (str(transactions) + str(previous_hash) + str(nonce)).encode()
-        guess_hash = hashlib.sha256(guess).hexdigest()
-
-        if guess_hash[:DIFFICULTY] == "0" * DIFFICULTY:
-            return
-
-        raise Exception(f"Proof of work not valid.")
-
-    @staticmethod
-    def hash(block):
-        """
-        Creates a SHA-256 hash of a Block
-        :param block: <dict> Block
-        :return: <str>
-        """
-        block_string = json.dumps(block, sort_keys=True).encode()
-
-        bin_hash = hashlib.sha256(block_string)
-        hex_hash = bin_hash.hexdigest()
-
-        return hex_hash

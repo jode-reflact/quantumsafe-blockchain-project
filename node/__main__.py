@@ -13,9 +13,6 @@ from node.transaction.pending_transaction_routes import transactions
 config = ConfigParser()
 config.read("config.ini")
 
-# db config
-# db_name = f"node_{config.get('')}.db"
-
 
 def create_app():
     app = Flask(__name__)

@@ -2,6 +2,7 @@ from collections import OrderedDict
 
 from node.database import db
 from node.transaction.transaction_model import ConfirmedTransaction
+from node.util import validate_pow
 
 
 class Block(db.Model):
@@ -42,9 +43,16 @@ class Block(db.Model):
             transaction={self.transactions} \
             )"
 
-    def is_valid(self):
-        # TODO: implement method to validate chain
-        raise NotImplementedError()
+    def validate(self):
+        validate_pow(self.transactions,
+                     self.previous_hash,
+                     self.nonce)
+
+        # validate transactions signatures
+        # omit last transaction of block since it is the reward transaction
+        transactions = self.transactions[:-1]
+        for t in transactions:
+            t.verify()
 
     def to_dict(self):
         return {

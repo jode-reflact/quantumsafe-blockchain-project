@@ -7,7 +7,11 @@ from node.database import db
 class ChainService:
     @staticmethod
     def get_chain():
-        return db.session.query(Chain).first()
+        chain = db.session.query(Chain).first()
+        if chain is not None:
+            return chain
+        return Chain(blocks=[])
+
 
     @staticmethod
     def resolve_conflicts(other_chain):
@@ -20,11 +24,11 @@ class ChainService:
         # create instances of class Chain
         other_chain = Chain.from_json(other_chain)
 
-        # TODO: validate other_chain
-        # try:
-        #     other_chain.validate()
-        # except Exception:
-        #     return
+        try:
+            other_chain.validate()
+        except Exception:
+            print("Other Chain is not valid")
+            return
 
         # replace chain
         if own_chain is not None:
