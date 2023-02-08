@@ -2,11 +2,10 @@ from collections import OrderedDict
 import binascii
 from Crypto.Hash import SHA256
 
-from node.database import db
 from node.transaction.cipher import cipher
 
 
-class AbstractTransaction():
+class BaseTransaction:
 
     def __init__(self, timestamp, sender, receiver, amount, signature):
         self.timestamp = timestamp

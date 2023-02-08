@@ -1,7 +1,7 @@
 from collections import OrderedDict
 
 from node.database import db
-from node.transaction.transaction_model import ConfirmedTransaction
+from node.transaction.confirmed_transaction_model import ConfirmedTransaction
 from node.util import validate_pow
 
 

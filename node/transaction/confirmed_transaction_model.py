@@ -1,17 +1,8 @@
 from node.database import db
-from node.transaction.abstract_transaction_model import AbstractTransaction
+from node.transaction.base_transaction_model import BaseTransaction
 
 
-class PendingTransaction(db.Model, AbstractTransaction):
-    __tablename__ = "pending_transactions"
-    timestamp = db.Column(db.String, primary_key=True)
-    sender = db.Column(db.String)
-    receiver = db.Column(db.String)
-    amount = db.Column(db.String)
-    signature = db.Column(db.String)
-
-
-class ConfirmedTransaction(db.Model, AbstractTransaction):
+class ConfirmedTransaction(db.Model, BaseTransaction):
     __tablename__ = "confirmed_transactions"
     timestamp = db.Column(db.String, primary_key=True)
     sender = db.Column(db.String)

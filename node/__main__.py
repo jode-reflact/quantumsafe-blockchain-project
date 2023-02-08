@@ -6,7 +6,7 @@ from configparser import ConfigParser
 from node.chain.chain_routes import chain
 from node.database import db
 from node.node.node_routes import nodes
-from node.transaction.pending_transaction_routes import transactions
+from node.transaction.transaction_routes import transactions
 
 
 # Get the config for the Flask app

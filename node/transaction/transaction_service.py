@@ -3,7 +3,7 @@ from sqlalchemy import exc
 
 from node.database import db
 from node.node.node_service import NodeService
-from node.transaction.transaction_model import PendingTransaction
+from node.transaction.pending_transaction_model import PendingTransaction
 
 
 class TransactionService:
