@@ -22,7 +22,8 @@ class ChainService:
         other_chain = Chain.from_json(other_chain)
 
         try:
-            other_chain.validate()        except Exception:
+            other_chain.validate()
+        except Exception:
             print("Other Chain is not valid")
             return
 
