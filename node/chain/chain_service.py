@@ -29,23 +29,20 @@ class ChainService:
         if own_chain is not None:
             db.session.delete(own_chain)
         db.session.add(other_chain)
-
-        ChainService.__update_pending_transactions(new_chain=other_chain)
-
+        ChainService.__remove_confirmed_transactions_from_pending_transactions(new_chain=other_chain)
         db.session.commit()
 
-    # PROBLEM: - comparison of pending tx and confirmed tx is not possible with a set difference
-    #            (only by implementing __hash() method)
-    #          - transactions must be deleted from one table and inserted in other table (inefficient)
-    # SOLUTION: use just one table for transactions in general use a column that indicates block affiliation
     @staticmethod
-    def __update_pending_transactions(new_chain):
+    def __remove_confirmed_transactions_from_pending_transactions(new_chain):
         confirmed_transactions = set()
         for block in new_chain.blocks:
             confirmed_transactions.update(block.transactions)
 
-        current_pending_transactions = set(db.session.query(PendingTransaction).all())
-
-        # TODO: build difference set
-
-        pass
+        # remove confirmed tx from pending tx
+        confirmed_transactions_timestamps = set(
+            map(lambda t: t.timestamp, confirmed_transactions)
+        )
+        db.session\
+            .query(PendingTransaction)\
+            .filter(PendingTransaction.timestamp.in_(confirmed_transactions_timestamps))\
+            .delete(synchronize_session=False)
