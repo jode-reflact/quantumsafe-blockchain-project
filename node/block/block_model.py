@@ -1,4 +1,5 @@
 from collections import OrderedDict
+from Crypto.Hash import SHA256
 
 from node.database import db
 from node.transaction.confirmed_transaction_model import ConfirmedTransaction
@@ -62,3 +63,5 @@ class Block(db.Model):
             "previous_hash": self.previous_hash,
             "transactions": [t.to_dict() for t in self.transactions],
         }
+    def hash(self):
+        return SHA256.new(str(self.to_dict()).encode("utf8")).hexdigest()
