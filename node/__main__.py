@@ -8,12 +8,13 @@ from node.database import db
 from node.node.node_routes import nodes
 from node.transaction.pending_transaction_routes import transactions
 
-# db config
-db_name = "node.db"
 
 # Get the config for the Flask app
 config = ConfigParser()
 config.read("config.ini")
+
+# db config
+# db_name = f"node_{config.get('')}.db"
 
 
 def create_app():
@@ -40,6 +41,8 @@ if __name__ == "__main__":
 
     _, PORT = sys.argv
     PORT = int(PORT)
+
+    db_name = f"node_{str(PORT)}.db"
 
     app = create_app()
 
