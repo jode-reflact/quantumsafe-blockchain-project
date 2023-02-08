@@ -7,18 +7,14 @@ from node.database import db
 class ChainService:
     @staticmethod
     def get_chain():
-        chain = db.session.query(Chain).first()
-        if chain is not None:
-            return chain
-        return Chain(blocks=[])
+        return db.session.query(Chain).first()
 
 
     @staticmethod
     def resolve_conflicts(other_chain):
         own_chain = ChainService.get_chain()
 
-        # save computational cost and create instance after this check
-        if own_chain is not None and len(own_chain.blocks) >= len(other_chain["blocks"]):
+        # save computational cost and create instance after this check        if own_chain is not None and len(own_chain.blocks) >= len(other_chain["blocks"]):
             return
 
         # create instances of class Chain

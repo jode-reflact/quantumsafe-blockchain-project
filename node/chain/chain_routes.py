@@ -1,6 +1,7 @@
 from flask.blueprints import Blueprint
 from flask import request, jsonify
 
+from node.chain.chain_model import Chain
 from node.chain.chain_service import ChainService
 
 chain = Blueprint("chain", __name__)
@@ -9,6 +10,8 @@ chain = Blueprint("chain", __name__)
 @chain.route('/', methods=["GET"])
 def get_chain():
     chain = ChainService.get_chain()
+    if chain is None:
+        chain = Chain(blocks=[])
     response = {"chain": chain.to_dict()}
 
     return jsonify(response), 200
