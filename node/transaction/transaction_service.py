@@ -12,13 +12,7 @@ class TransactionService:
         return db.session.query(PendingTransaction).all()
 
     @staticmethod
-    def add_transaction(sender, receiver, amount, timestamp, signature):
-        transaction = PendingTransaction(timestamp=timestamp,
-                                         sender=sender,
-                                         receiver=receiver,
-                                         amount=amount,
-                                         signature=signature
-                                         )
+    def add_transaction(transaction):
         transaction.verify()
 
         # insert transaction in db

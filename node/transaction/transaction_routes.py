@@ -1,6 +1,7 @@
 from flask.blueprints import Blueprint
 from flask import request, jsonify
 
+from node.transaction.pending_transaction_model import PendingTransaction
 from node.transaction.transaction_service import TransactionService
 
 
@@ -21,14 +22,11 @@ def get_pending_transactions():
 
 @transactions.route('/', methods=["POST"])
 def receive_transaction():
-    transaction = request.get_json()
+    req = request.get_json()
 
     try:
-        TransactionService.add_transaction(sender=transaction["sender"],
-                                           receiver=transaction["receiver"],
-                                           amount=transaction["amount"],
-                                           timestamp=transaction["timestamp"],
-                                           signature=transaction["signature"])
+        transaction = PendingTransaction.from_json(req)
+        TransactionService.add_transaction(transaction)
     except KeyError:
         response = {"message": "incomplete transaction"}
         return jsonify(response), 400

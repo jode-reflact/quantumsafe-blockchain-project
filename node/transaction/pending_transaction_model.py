@@ -10,4 +10,12 @@ class PendingTransaction(db.Model, BaseTransaction):
     amount = db.Column(db.String)
     signature = db.Column(db.String)
 
-    # TODO: Implement from_json and replace in TransactionService
+    @staticmethod
+    def from_json(json):
+        return PendingTransaction(
+            timestamp=json["timestamp"],
+            sender=json["sender"],
+            receiver=json["receiver"],
+            amount=json["amount"],
+            signature=json["signature"],
+        )
