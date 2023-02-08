@@ -2,6 +2,8 @@ from node.database import db
 from node.block.block_model import Block
 
 
+# TODO: Create initially genesis block
+
 class Chain(db.Model):
     __tablename__ = "chains"
     index = db.Column(db.Integer, primary_key=True)
