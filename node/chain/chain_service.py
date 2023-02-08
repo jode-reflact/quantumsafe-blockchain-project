@@ -2,6 +2,8 @@ from node.block.block_model import Block
 from node.block.block_service import BlockService
 from node.chain.chain_model import Chain
 from node.database import db
+from node.transaction.abstract_transaction_model import AbstractTransaction
+from node.transaction.transaction_model import PendingTransaction
 
 
 class ChainService:
@@ -31,4 +33,24 @@ class ChainService:
         if own_chain is not None:
             db.session.delete(own_chain)
         db.session.add(other_chain)
+
+        # TODO: update pending transactions
+        # new_pending_transactions = ChainService.__get_updated_pending_transactions(other_chain)
+
+
         db.session.commit()
+
+    # PROBLEM: - comparison of pending tx and confirmed tx is not possible with a set difference
+    #          - transactions must be deleted from one table and inserted in other table (inefficient)
+    # SOLUTION: use just one table for transactions in general use a column that indicates block affiliation
+    @staticmethod
+    def __get_updated_pending_transactions(new_chain):
+        confirmed_transactions = set()
+        for block in new_chain.blocks:
+            confirmed_transactions.update(block.transactions)
+
+        current_pending_transactions = set(db.session.query(PendingTransaction).all())
+
+        # TODO: build difference set
+
+        pass
