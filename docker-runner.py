@@ -147,8 +147,6 @@ def sendTransaction(nodeName: str, senderClientName: str,  receiverClientName: s
 # make a test transaction -> remove later
 # sendTransaction('node-1', 'client-1', 'client-2', 100)
 
-quit()
-
 # some more transactions
 for i in range(NUMBER_OF_TRANSACTIONS):
     random_node = random.choice(list(IP_NODES.keys()))
