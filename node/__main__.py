@@ -18,7 +18,7 @@ config.read("config.ini")
 def create_app():
     app = Flask(__name__)
     # app.config['DEBUG'] = True
-    app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///" + db_name
+    app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:////" + db_name
     db.init_app(app)
     app.register_blueprint(transactions, url_prefix="/transactions")
     app.register_blueprint(nodes, url_prefix="/nodes")

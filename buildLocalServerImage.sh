@@ -1,1 +1,1 @@
-docker build --progress=plain -t blockchain-server:latest -f Dockerfile.server .
+docker build -t blockchain-server:latest -f Dockerfile.server .
