@@ -1,8 +1,10 @@
 import hashlib
 import json
+import os
 
 
-DIFFICULTY = 3
+DIFFICULTY = os.getenv("DIFFICULTY")
+DIFFICULTY = int(DIFFICULTY)
 
 
 def validate_pow(transactions, previous_hash, nonce):

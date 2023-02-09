@@ -4,6 +4,7 @@ import sys
 from configparser import ConfigParser
 
 from node.chain.chain_routes import chain
+from node.chain.chain_service import ChainService
 from node.database import db
 from node.node.node_routes import nodes
 from node.transaction.transaction_routes import transactions
@@ -30,6 +31,7 @@ def setup_database(app):
         # reset db each run
         db.drop_all()
         db.create_all()
+        ChainService.set_initial_chain()
 
 
 if __name__ == "__main__":

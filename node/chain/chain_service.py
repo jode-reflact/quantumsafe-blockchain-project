@@ -1,9 +1,22 @@
+import time
+from node.block.block_model import Block
 from node.chain.chain_model import Chain
 from node.database import db
 from node.transaction.pending_transaction_model import PendingTransaction
 
 
 class ChainService:
+    @staticmethod
+    def set_initial_chain():
+        genesis_block = Block(index=0,
+                    timestamp=str(time.time()),
+                    previous_hash="",
+                    nonce=0,
+                    transactions=[],
+                    )
+        initialChain = Chain([genesis_block])
+        db.session.add(initialChain)
+        db.session.commit()
     @staticmethod
     def get_chain():
         return db.session.query(Chain).first()
