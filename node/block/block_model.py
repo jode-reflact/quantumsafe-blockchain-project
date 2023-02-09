@@ -45,13 +45,13 @@ class Block(db.Model):
             )"
 
     def validate(self):
-        validate_pow(self.transactions,
-                     self.previous_hash,
-                     self.nonce)
 
         # validate transactions signatures
         # omit last transaction of block since it is the reward transaction
         transactions = self.transactions[:-1]
+        validate_pow(transactions,
+                     self.previous_hash,
+                     self.nonce)
         for t in transactions:
             t.verify()
 

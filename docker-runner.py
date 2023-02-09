@@ -12,8 +12,6 @@ NUMBER_OF_CLIENTS = 2
 
 NUMBER_OF_TRANSACTIONS = 50
 
-NUMBER_OF_MINED_BLOCKS = 1
-
 STANDARD_PORT_NODE = 2000
 STANDARD_PORT_CLIENT = 3000
 
@@ -70,6 +68,8 @@ for client_i in range(NUMBER_OF_CLIENTS):
     IP_CLIENTS[client_name] = {'ip' :getIPFromContainer(container), 'port': client_port}
 print("IP_CLIENTS", IP_CLIENTS)
 
+time.sleep(30)
+
 # remove all clients and nodes above the node / client count
 all_container = client.containers.list()
 for container in all_container:
@@ -101,11 +101,11 @@ def getIPOfOtherNodes(node_name):
 for name, value in IP_NODES.items():
     ip: str = value['ip']
     port: int = value['port']
-    url = 'http://localhost:'+port.__str__()+'/nodes/register'
+    url = 'http://localhost:'+port.__str__()+'/nodes/'
     ips = getIPOfOtherNodes(name)
-    form_data = {'nodes': ','.join(ips)}
-    response = requests.post(url, data=form_data)
-    print(name,response) #201 == gut
+    data = {'nodes': ips}
+    response = requests.post(url, json=data)
+    print(name,response) #204 == gut
 
 # create client wallets
 for name, value in IP_CLIENTS.items():
@@ -146,6 +146,8 @@ def sendTransaction(nodeName: str, senderClientName: str,  receiverClientName: s
 
 # make a test transaction -> remove later
 # sendTransaction('node-1', 'client-1', 'client-2', 100)
+
+quit()
 
 # some more transactions
 for i in range(NUMBER_OF_TRANSACTIONS):

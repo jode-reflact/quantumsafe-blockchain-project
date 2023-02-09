@@ -16,6 +16,23 @@ def get_chain():
 
     return jsonify(response), 200
 
+@chain.route('/validate', methods=["GET"])
+def validate_own_chain():
+    chain = ChainService.get_chain()
+    if chain is None:
+        chain = Chain(blocks=[])
+    try:
+        chain.validate()
+        return jsonify({"valid": True}), 200
+    except ValueError:
+        return jsonify({"valid": False, "reason": "Transaction not valid"}), 200
+    except Exception as e:
+        return jsonify({"valid": False, "reason": "Chain not valide", "message": str(e)}), 200
+
+    response = {"chain": chain.to_dict()}
+
+    return jsonify(response), 200
+
 
 @chain.route('/', methods=["POST"])
 def resolve_conflicts():
@@ -23,3 +40,8 @@ def resolve_conflicts():
     ChainService.resolve_conflicts(other_chain)
 
     return '', 204
+
+@chain.route('/', methods=["PUT"])
+def distribute_chain():
+    ChainService.distribute_chain()
+    return '', 200

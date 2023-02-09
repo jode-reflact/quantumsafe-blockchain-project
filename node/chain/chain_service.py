@@ -1,7 +1,10 @@
 import time
+
+import requests
 from node.block.block_model import Block
 from node.chain.chain_model import Chain
 from node.database import db
+from node.node.node_service import NodeService
 from node.transaction.pending_transaction_model import PendingTransaction
 
 
@@ -18,7 +21,7 @@ class ChainService:
         db.session.add(initialChain)
         db.session.commit()
     @staticmethod
-    def get_chain():
+    def get_chain() -> Chain:
         return db.session.query(Chain).first()
 
     @staticmethod
@@ -41,6 +44,7 @@ class ChainService:
         # replace chain
         if own_chain is not None:
             db.session.delete(own_chain)
+            db.session.query(Block).delete() #for testing
         db.session.add(other_chain)
         ChainService.__remove_confirmed_transactions_from_pending_transactions(new_chain=other_chain)
         db.session.commit()
@@ -59,3 +63,13 @@ class ChainService:
             .query(PendingTransaction)\
             .filter(PendingTransaction.timestamp.in_(confirmed_transactions_timestamps))\
             .delete(synchronize_session=False)
+
+    @staticmethod
+    def distribute_chain():
+        nodes = NodeService.nodes.copy()
+        chain: Chain = ChainService.get_chain()
+        for node in nodes:
+            requests.post(f"http://{node}/chain",
+                          json={"chain": chain.to_dict()},
+                          headers={"Access-Control-Allow-Origin": "*"}
+                          )

@@ -1,11 +1,13 @@
+from typing import List
 from node.database import db
 from node.block.block_model import Block
+from sqlalchemy.orm import Mapped
 
 
 class Chain(db.Model):
     __tablename__ = "chains"
     index = db.Column(db.Integer, primary_key=True)
-    blocks = db.relationship("Block", backref="chains", cascade="all, delete-orphan")
+    blocks: Mapped[List[Block]] = db.relationship("Block", backref="chains", cascade="all, delete-orphan")
 
     def __init__(self, blocks):
         self.blocks = blocks
@@ -40,7 +42,7 @@ class Chain(db.Model):
         while index < self.length:
             current_block = self.blocks[index]
 
-            if current_block.previous_hash != self.hash(last_block):
+            if current_block.previous_hash != last_block.hash():
                 raise Exception(f"Previous Hash of Block {index} is not valid.")
 
             current_block.validate()
