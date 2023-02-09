@@ -39,4 +39,4 @@ if __name__ == "__main__":
 
     session = Session(engine, autoflush=False)
 
-    miner = Miner(session,DIFFICULTY, BLOCK_SIZE)
+    miner = Miner(session=session, PORT=PORT, DIFFICULTY=DIFFICULTY, BLOCK_SIZE=BLOCK_SIZE)

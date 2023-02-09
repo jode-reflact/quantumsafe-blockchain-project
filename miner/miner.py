@@ -27,11 +27,13 @@ class Miner(object):
     DIFFICULTY = None
     BLOCK_SIZE = None
     session = None
+    PORT = None
 
-    def __init__(self, session: Session, DIFFICULTY, BLOCK_SIZE = None):
+    def __init__(self, session: Session,PORT: int, DIFFICULTY, BLOCK_SIZE = None):
         self.session = session
         self.DIFFICULTY = DIFFICULTY
         self.BLOCK_SIZE = BLOCK_SIZE
+        self.PORT = PORT
         self.node_id = str(uuid4()).replace("-", "")
         print("Miner init")
         while True:
@@ -119,6 +121,7 @@ class Miner(object):
         self.session.add(block)
         self.delete_pending_transactions(transactions)
         self.session.commit()
+        self.send_new_block_info_to_node()
         return
     def delete_pending_transactions(self, transactions: List[PendingTransaction]):
         """Warning: Does not commit changes to db
@@ -126,3 +129,5 @@ class Miner(object):
         timestamps = [tx.timestamp for tx in transactions]
         deleteQuery = delete(PendingTransaction).where(PendingTransaction.timestamp.in_(timestamps))
         self.session.execute(deleteQuery)
+    def send_new_block_info_to_node(self):
+        return requests.put("http://localhost:" + self.PORT.__str__() + "/chain")

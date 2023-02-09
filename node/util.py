@@ -3,7 +3,7 @@ import json
 import os
 
 
-DIFFICULTY = os.getenv("DIFFICULTY")
+DIFFICULTY = os.getenv("DIFFICULTY", 4)
 DIFFICULTY = int(DIFFICULTY)
 
 
