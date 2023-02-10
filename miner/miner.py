@@ -16,6 +16,7 @@ from Crypto.Hash import SHA256
 
 import requests
 from node.block.block_model import Block
+from node.chain.chain_model import Chain
 from node.transaction.confirmed_transaction_model import ConfirmedTransaction
 
 from node.transaction.pending_transaction_model import PendingTransaction
@@ -100,6 +101,12 @@ class Miner(object):
         return last_block[0].hash()
     def get_new_block_index(self):
         return self.session.query(Block).count()
+    def get_chain_index(self):
+        chain: Chain = self.session.query(Chain).first()
+        if chain is not None:
+            return chain.index
+        else:
+            return 1
     def get_transactions_for_next_block(self):
         if self.BLOCK_SIZE is not None:
             return self.session.query(PendingTransaction).limit(self.BLOCK_SIZE).all()
@@ -117,7 +124,7 @@ class Miner(object):
             "previous_hash": previous_hash,
             "transactions": [tx.to_dict() for tx in transactions]
         })
-        block.chain_index = 1
+        block.chain_index = self.get_chain_index()
         self.session.add(block)
         self.delete_pending_transactions(transactions)
         self.session.commit()

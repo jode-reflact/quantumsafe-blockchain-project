@@ -6,7 +6,7 @@ from sqlalchemy.orm import Mapped
 
 class Chain(db.Model):
     __tablename__ = "chains"
-    index = db.Column(db.Integer, primary_key=True)
+    index: Mapped[int] = db.Column(db.Integer, primary_key=True)
     blocks: Mapped[List[Block]] = db.relationship("Block", backref="chains", cascade="all, delete-orphan")
 
     def __init__(self, blocks):

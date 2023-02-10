@@ -1,6 +1,7 @@
 from collections import OrderedDict
+from typing import List
 from Crypto.Hash import SHA256
-
+from sqlalchemy.orm import Mapped
 from node.database import db
 from node.transaction.confirmed_transaction_model import ConfirmedTransaction
 from node.util import validate_pow
@@ -12,7 +13,7 @@ class Block(db.Model):
     timestamp = db.Column(db.String)
     nonce = db.Column(db.Integer)
     previous_hash = db.Column(db.String)
-    transactions = db.relationship("ConfirmedTransaction", backref="blocks", cascade="all, delete-orphan")
+    transactions: Mapped[List[ConfirmedTransaction]] = db.relationship("ConfirmedTransaction", backref="blocks", cascade="all, delete-orphan")
 
     chain_index = db.Column(db.Integer, db.ForeignKey("chains.index"))
 
