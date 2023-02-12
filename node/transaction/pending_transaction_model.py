@@ -9,13 +9,24 @@ class PendingTransaction(db.Model, BaseTransaction):
     receiver = db.Column(db.String)
     amount = db.Column(db.String)
     signature = db.Column(db.String)
+    receivedAt = db.Column(db.String)
 
     @staticmethod
     def from_json(json):
-        return PendingTransaction(
+        if "receivedAt" in json:
+            return PendingTransaction(
             timestamp=json["timestamp"],
             sender=json["sender"],
             receiver=json["receiver"],
             amount=json["amount"],
             signature=json["signature"],
-        )
+            receivedAt=json["receivedAt"]
+            )
+        else:
+            return PendingTransaction(
+                timestamp=json["timestamp"],
+                sender=json["sender"],
+                receiver=json["receiver"],
+                amount=json["amount"],
+                signature=json["signature"],
+            )

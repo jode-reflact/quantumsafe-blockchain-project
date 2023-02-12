@@ -9,6 +9,7 @@ class ConfirmedTransaction(db.Model, BaseTransaction):
     receiver = db.Column(db.String)
     amount = db.Column(db.String)
     signature = db.Column(db.String)
+    receivedAt = db.Column(db.String)
 
     block_index = db.Column(db.Integer, db.ForeignKey("blocks.index"))
 
@@ -20,4 +21,5 @@ class ConfirmedTransaction(db.Model, BaseTransaction):
             receiver=json["receiver"],
             amount=json["amount"],
             signature=json["signature"],
+            receivedAt=json["receivedAt"]
         )

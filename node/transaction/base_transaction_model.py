@@ -7,12 +7,13 @@ from node.transaction.cipher import cipher
 
 class BaseTransaction:
 
-    def __init__(self, timestamp, sender, receiver, amount, signature):
+    def __init__(self, timestamp, sender, receiver, amount, signature, receivedAt):
         self.timestamp = timestamp
         self.sender = sender
         self.receiver = receiver
         self.amount = amount
         self.signature = signature
+        self.receivedAt = receivedAt
 
     def __repr__(self):
         return f"PendingTransaction(\
@@ -20,7 +21,8 @@ class BaseTransaction:
             amount={self.amount}, \
             sender={self.sender}, \
             receiver={self.receiver}, \
-            signature={self.signature})"
+            signature={self.signature}, \
+            receivedAt={self.receivedAt})"
 
     def verify(self):
         """
@@ -39,6 +41,7 @@ class BaseTransaction:
                 "receiver": self.receiver,
                 "amount": self.amount,
                 "timestamp": self.timestamp,
+                #"receivedAt": self.receivedAt
             }
         )
 
@@ -49,4 +52,5 @@ class BaseTransaction:
             "amount": self.amount,
             "timestamp": self.timestamp,
             "signature": self.signature,
+            "receivedAt": self.receivedAt
         }

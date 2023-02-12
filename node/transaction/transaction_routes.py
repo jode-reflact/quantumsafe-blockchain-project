@@ -27,8 +27,8 @@ def receive_transaction():
     try:
         transaction = PendingTransaction.from_json(req)
         TransactionService.add_transaction(transaction)
-    except KeyError:
-        response = {"message": "incomplete transaction"}
+    except KeyError as e:
+        response = {"message": "incomplete transaction", 'error': str(e)}
         return jsonify(response), 400
 
     return '', 204

@@ -1,3 +1,4 @@
+from time import time
 import requests
 from sqlalchemy import exc
 
@@ -12,16 +13,22 @@ class TransactionService:
         return db.session.query(PendingTransaction).all()
 
     @staticmethod
-    def add_transaction(transaction):
+    def add_transaction(transaction: PendingTransaction):
         transaction.verify()
 
         # insert transaction in db
         try:
+            if transaction.receivedAt is None:
+                isNewTransaction = True
+                transaction.receivedAt = time()
+            else:
+                isNewTransaction = False
             db.session.add(transaction)
             db.session.commit()
 
             # only distribute transaction if transaction is unknown yet
-            TransactionService.__distribute_transaction(transaction)
+            if isNewTransaction:
+                TransactionService.__distribute_transaction(transaction)
         except exc.IntegrityError:
             # transaction already known
             db.session.rollback()

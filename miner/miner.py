@@ -57,6 +57,7 @@ class Miner(object):
                 "amount": MINING_REWARD,
                 "timestamp": time(),
                 "signature": "",
+                "receivedAt": time()
             }
         )
         transactions.append(reward_transaction)
