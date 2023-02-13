@@ -89,7 +89,7 @@ class Miner(object):
         proof_of_work function.
         """
 
-        transactions_without_signature = self.get_transactions_without_signature(transactions)
+        transactions_without_signature = self.get_transactions_without_receivedAt(transactions)
         guess = (str(transactions_without_signature) + str(last_hash) + str(nonce)).encode()
         guess_hash = hashlib.sha256(guess).hexdigest()
 
@@ -113,8 +113,8 @@ class Miner(object):
             return self.session.query(PendingTransaction).limit(self.BLOCK_SIZE).all()
         else:
             return self.session.query(PendingTransaction).all()
-    def get_transactions_without_signature(self, transactions: List[PendingTransaction]):
-        return [tx.get_representation_without_signature() for tx in transactions]
+    def get_transactions_without_receivedAt(self, transactions: List[PendingTransaction]):
+        return [tx.get_representation_without_receivedAt() for tx in transactions]
     def add_block(self, nonce: int, transactions: List[PendingTransaction], previous_hash: str):
         new_index = self.get_new_block_index()
         print("New index", new_index)

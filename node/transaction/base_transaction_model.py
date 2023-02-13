@@ -34,14 +34,37 @@ class BaseTransaction:
                       message_hash=transaction_hash,
                       signature=self.signature)
 
-    def get_representation_without_signature(self):
+    def get_representation_without_receivedAt(self):
+        """Transaction Representation without receivedAt.
+        Used to mine and verify proof of work nonce.
+        Received At cannot be used because its not filled at mining
+
+        Returns:
+            _type_: _description_
+        """
         return OrderedDict(
             {
                 "sender": self.sender,
                 "receiver": self.receiver,
                 "amount": self.amount,
                 "timestamp": self.timestamp,
-                #"receivedAt": self.receivedAt
+                "signature": self.signature
+            }
+        )
+    def get_representation_without_signature(self):
+        """Transaction Representation without receivedAt.
+        Used to mine and verify proof of work nonce.
+        Received At cannot be used because its not filled at mining
+
+        Returns:
+            _type_: _description_
+        """
+        return OrderedDict(
+            {
+                "sender": self.sender,
+                "receiver": self.receiver,
+                "amount": self.amount,
+                "timestamp": self.timestamp,
             }
         )
 

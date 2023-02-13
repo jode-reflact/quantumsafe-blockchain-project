@@ -11,7 +11,7 @@ DIFFICULTY = int(DIFFICULTY)
 
 
 def validate_pow(transactions: List[ConfirmedTransaction], previous_hash, nonce):
-    transactions_without_signature = [tx.get_representation_without_signature() for tx in transactions]
+    transactions_without_signature = [tx.get_representation_without_receivedAt() for tx in transactions]
     guess = (str(transactions_without_signature) + str(previous_hash) + str(nonce)).encode()
     guess_hash = hashlib.sha256(guess).hexdigest()
 
