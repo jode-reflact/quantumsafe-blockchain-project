@@ -1,3 +1,4 @@
+from functools import reduce
 from typing import List
 from node.database import db
 from node.block.block_model import Block
@@ -15,6 +16,14 @@ class Chain(db.Model):
     @property
     def length(self):
         return len(self.blocks)
+
+    @property
+    def transaction_count(self):
+        transaction_count = 0
+        for block in self.blocks:
+            # subtract the block reward transaction
+            transaction_count = transaction_count + len(block.transactions) - 1
+        return transaction_count
 
     @staticmethod
     def from_json(json):

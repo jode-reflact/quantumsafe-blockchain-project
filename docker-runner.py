@@ -1,3 +1,4 @@
+import uuid
 import docker
 import requests
 import time
@@ -7,10 +8,10 @@ client = docker.from_env()
 
 CIPHER = "dilithium"
 
-NUMBER_OF_NODES = 2
+NUMBER_OF_NODES = 4
 NUMBER_OF_CLIENTS = 2
 
-NUMBER_OF_TRANSACTIONS = 500
+NUMBER_OF_TRANSACTIONS = 1000
 
 STANDARD_PORT_NODE = 2000
 STANDARD_PORT_CLIENT = 3000
@@ -25,6 +26,16 @@ WALLET_CLIENTS = {}
 
 def getIPFromContainer(container):
     return container.attrs['NetworkSettings']['Networks']['bridge']['IPAddress']
+
+container_env = {
+    "CIPHER":CIPHER,
+    "TEST_ID": str(uuid.uuid4()).replace("-", ""),
+    "TEST_TRANSACTION_COUNT": NUMBER_OF_TRANSACTIONS,
+    "TEST_DATE": time.strftime('%d-%m-%Y %H:%M:%S'),
+    "TEST_NODE_COUNT": NUMBER_OF_NODES,
+    "TEST_CLIENT_COUNT": NUMBER_OF_CLIENTS,
+    "HOST": "localhost"
+    }
 
 # make sure all nodes are fresh / running / up to date
 for node_i in range(NUMBER_OF_NODES):
@@ -41,7 +52,7 @@ for node_i in range(NUMBER_OF_NODES):
             continue
         else:
             container.remove(force=True)
-    client.containers.run(image=IMAGE_NODE, detach=True, name=node_name, ports={'80/tcp': node_port}, environment={"CIPHER":CIPHER})
+    client.containers.run(image=IMAGE_NODE, detach=True, name=node_name, ports={'80/tcp': node_port}, environment=container_env)
     container = client.containers.get(node_name)
     IP_NODES[node_name] = {'ip': getIPFromContainer(container), 'port': node_port}
 print("IP_NODES", IP_NODES)
@@ -62,7 +73,7 @@ for client_i in range(NUMBER_OF_CLIENTS):
             continue
         else:
             container.remove(force=True)
-    client.containers.run(image=IMAGE_CLIENT, detach=True, name=client_name, ports={'80/tcp': client_port}, environment={"CIPHER":CIPHER})
+    client.containers.run(image=IMAGE_CLIENT, detach=True, name=client_name, ports={'80/tcp': client_port}, environment=container_env)
     time.sleep(1)
     container = client.containers.get(client_name)
     IP_CLIENTS[client_name] = {'ip' :getIPFromContainer(container), 'port': client_port}

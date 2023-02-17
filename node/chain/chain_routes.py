@@ -44,4 +44,5 @@ def resolve_conflicts():
 @chain.route('/', methods=["PUT"])
 def distribute_chain():
     ChainService.distribute_chain()
+    ChainService.check_test_completion()
     return '', 200

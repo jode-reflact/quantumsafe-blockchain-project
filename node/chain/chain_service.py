@@ -1,5 +1,5 @@
 import time
-
+import os
 import requests
 from node.block.block_model import Block
 from node.chain.chain_model import Chain
@@ -7,6 +7,17 @@ from node.database import db
 from node.node.node_service import NodeService
 from node.transaction.pending_transaction_model import PendingTransaction
 
+TEST_CONFIG = {
+    "CIPHER": os.environ['CIPHER'],
+    "TEST_ID": os.environ['TEST_ID'],
+    "TEST_TRANSACTION_COUNT": int(os.environ['TEST_TRANSACTION_COUNT']),
+    "TEST_DATE": os.environ['TEST_DATE'],
+    "TEST_NODE_COUNT": int(os.environ['TEST_NODE_COUNT']),
+    "TEST_CLIENT_COUNT": int(os.environ['TEST_CLIENT_COUNT']),
+    "HOST": os.environ['HOST'],
+    }
+
+TEST_COMPLETED = False
 
 class ChainService:
     @staticmethod
@@ -48,6 +59,7 @@ class ChainService:
         db.session.add(other_chain)
         ChainService.__remove_confirmed_transactions_from_pending_transactions(new_chain=other_chain)
         db.session.commit()
+        ChainService.check_test_completion()
 
     @staticmethod
     def __remove_confirmed_transactions_from_pending_transactions(new_chain):
@@ -73,3 +85,17 @@ class ChainService:
                           json={"chain": chain.to_dict()},
                           headers={"Access-Control-Allow-Origin": "*"}
                           )
+    
+    @staticmethod
+    def check_test_completion():
+        global TEST_COMPLETED
+        global TEST_CONFIG
+        if not TEST_COMPLETED:
+            chain: Chain = ChainService.get_chain()
+            if chain.transaction_count >= TEST_CONFIG["TEST_TRANSACTION_COUNT"]:
+                TEST_CONFIG["CHAIN"] = chain
+                requests.post(f"http://{TEST_CONFIG['HOST']}/completed_test",
+                    json=TEST_CONFIG,
+                    headers={"Access-Control-Allow-Origin": "*"}
+                )
+                TEST_COMPLETED = True
