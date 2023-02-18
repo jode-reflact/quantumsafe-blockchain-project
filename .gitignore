@@ -4,3 +4,4 @@ my.azureauth
 test.txt
 .DS_Store
 **node_modules
+**dist
