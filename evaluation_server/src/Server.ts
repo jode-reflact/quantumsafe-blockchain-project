@@ -31,6 +31,7 @@ export class EvaluationServer {
 
         this.app.post("/completed_test", [], async (req: Request, res: Response) => {
             const testResult: TestResult = req.body;
+            console.log('test Completed', testResult)
             await this.testResultsCol.insertOne(testResult);
             this.stopLocalTest();
             res.json('inserted')
