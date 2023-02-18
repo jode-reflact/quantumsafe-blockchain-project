@@ -18,6 +18,7 @@ export class EvaluationServer {
         this.initDB()
         this.initExpress()
         this.initLocalDocker()
+        this.runLocalTestRunnerScript()
     }
     private async initDB() {
         const mongoClient = await MongoClient.connect("mongodb://" + process.env.dbuser + ":" + process.env.dbpass + "@127.0.0.1:27017/admin");
@@ -40,14 +41,10 @@ export class EvaluationServer {
     }
     private async initLocalDocker() {
         this.docker = new Docker()
-        this.docker.listContainers((err, containers) => {
-            console.log('works');
-            console.log('containers', containers)
-        });
-        this.runLocalTestRunnerScript()
     }
     private async runLocalTestRunnerScript() {
         const p = path.resolve('../../docker-runner.py')
+        console.log('python path', p)
         const process = spawn('python', [p]);
         process.stdout.on('data', (data) => {
             console.log('Python Data:', data)
