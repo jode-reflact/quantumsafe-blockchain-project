@@ -43,7 +43,7 @@ export class EvaluationServer {
         this.docker = new Docker()
     }
     private async runLocalTestRunnerScript() {
-        const p = path.resolve('../../docker-runner.py')
+        const p = path.resolve('../docker-runner.py')
         console.log('python path', p)
         const process = spawn('python', [p]);
         process.stdout.on('data', (data) => {
