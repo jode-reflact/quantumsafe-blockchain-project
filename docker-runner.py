@@ -5,6 +5,8 @@ import time
 import random
 import sys
 
+time.sleep(120)
+
 client = docker.from_env()
 
 _, CIPHER, NUMBER_OF_TRANSACTIONS = sys.argv
