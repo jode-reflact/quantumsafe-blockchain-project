@@ -59,7 +59,6 @@ class ChainService:
         db.session.add(other_chain)
         ChainService.__remove_confirmed_transactions_from_pending_transactions(new_chain=other_chain)
         db.session.commit()
-        ChainService.check_test_completion()
 
     @staticmethod
     def __remove_confirmed_transactions_from_pending_transactions(new_chain):
@@ -93,12 +92,16 @@ class ChainService:
         global TEST_CONFIG
         if not TEST_COMPLETED:
             chain: Chain = ChainService.get_chain()
-            print("TRANSACTION COUNT", chain.transaction_count)
-            print("TEST TRANSACTION COUNT", TEST_CONFIG["TEST_TRANSACTION_COUNT"])
-            if chain.transaction_count >= TEST_CONFIG["TEST_TRANSACTION_COUNT"]:
-                TEST_CONFIG["CHAIN"] = chain.to_dict()
-                requests.post(f"http://{TEST_CONFIG['HOST']}/completed_test",
-                    json=TEST_CONFIG,
-                    headers={"Access-Control-Allow-Origin": "*"}
-                )
-                TEST_COMPLETED = True
+            try:
+                chain.validate()
+                print("TRANSACTION COUNT", chain.transaction_count)
+                print("TEST TRANSACTION COUNT", TEST_CONFIG["TEST_TRANSACTION_COUNT"])
+                if chain.transaction_count >= TEST_CONFIG["TEST_TRANSACTION_COUNT"]:
+                    TEST_CONFIG["CHAIN"] = chain.to_dict()
+                    requests.post(f"http://{TEST_CONFIG['HOST']}/completed_test",
+                        json=TEST_CONFIG,
+                        headers={"Access-Control-Allow-Origin": "*"}
+                    )
+                    TEST_COMPLETED = True
+            except:
+                print("Chain and Test not valid")

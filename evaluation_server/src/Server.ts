@@ -5,12 +5,27 @@ import Docker from 'dockerode';
 import path from 'path'
 import { spawn } from 'child_process'
 
-export type TestResult = any;
+export type TestResult = {
+    CIPHER: Cipher,
+    TEST_ID: string,
+    TEST_DATE: string,
+    TEST_TRANSACTION_COUNT: number,
+    TEST_NODE_COUNT: number,
+    TEST_CLIENT_COUNT: number,
+    CHAIN: { index: number, blocks: any[] }
+};
+
+export type TestConfig = { cipher: Cipher, n_transactions: number };
+
+export type Cipher = 'dilithium' | 'ecc' | 'rsa'
+const allCipher: Cipher[] = ['dilithium', 'ecc', 'rsa']
+const allTransactionCounts = [1000]
 
 export class EvaluationServer {
     public app = express();
     public mainDb: Db
     public testResultsCol: Collection<TestResult>
+    public scheduledTestsCol: Collection<TestConfig>
     public docker: Docker;
 
     constructor() {
@@ -18,12 +33,29 @@ export class EvaluationServer {
         this.initDB()
         this.initExpress()
         this.initLocalDocker()
-        this.runLocalTestRunnerScript()
     }
     private async initDB() {
         const mongoClient = await MongoClient.connect("mongodb://" + process.env.dbuser + ":" + process.env.dbpass + "@127.0.0.1:27017/admin");
         this.mainDb = mongoClient.db(process.env.dbname);
         this.testResultsCol = this.mainDb.collection("testResults");
+        this.scheduledTestsCol = this.mainDb.collection("scheduledTests");
+        await this.setupDb();
+    }
+    private async setupDb() {
+        const scheduledTestCount = await this.scheduledTestsCol.countDocuments();
+        if (scheduledTestCount == 0) {
+            const tests: TestConfig[] = []
+            for (const cipher of allCipher) {
+                for (const n_transactions of allTransactionCounts) {
+                    for (let i = 0; i < 10; i++) {
+                        const config: TestConfig = { cipher, n_transactions }
+                        tests.push(config)
+                    }
+                }
+            }
+            await this.scheduledTestsCol.insertMany(tests);
+        }
+        this.runNextTest()
     }
     private async initExpress() {
         this.app.use(bodyParser.json({ limit: "100mb" }));
@@ -33,6 +65,7 @@ export class EvaluationServer {
             const testResult: TestResult = req.body;
             console.log('test Completed', testResult)
             await this.testResultsCol.insertOne(testResult);
+            await this.scheduledTestsCol.deleteOne({ cipher: testResult.CIPHER, n_transactions: testResult.TEST_TRANSACTION_COUNT });
             this.stopLocalTest();
             res.json('inserted')
         })
@@ -43,10 +76,14 @@ export class EvaluationServer {
     private async initLocalDocker() {
         this.docker = new Docker()
     }
-    private async runLocalTestRunnerScript() {
+    private async runNextTest() {
+        const nextConfig = await this.scheduledTestsCol.findOne();
+        this.runLocalTestRunnerScript(nextConfig);
+    }
+    private async runLocalTestRunnerScript(config: TestConfig) {
         const p = path.resolve('../docker-runner.py')
         console.log('python path', p)
-        const process = spawn('python', [p]);
+        const process = spawn('python', [p, config.cipher, config.n_transactions + ""]);
         process.stdout.on('data', (data) => {
             console.log('Python Data:', data.toString())
         });
@@ -57,6 +94,7 @@ export class EvaluationServer {
             containers.forEach((containerInfo) => {
                 this.docker.getContainer(containerInfo.Id).remove({ force: true });
             });
+            this.runNextTest();
         });
     }
 }

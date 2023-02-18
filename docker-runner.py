@@ -3,15 +3,18 @@ import docker
 import requests
 import time
 import random
+import sys
 
 client = docker.from_env()
 
-CIPHER = "dilithium"
+_, CIPHER, NUMBER_OF_TRANSACTIONS = sys.argv
+NUMBER_OF_TRANSACTIONS = int(NUMBER_OF_TRANSACTIONS)
+#CIPHER = "dilithium"
 
-NUMBER_OF_NODES = 4
+#NUMBER_OF_TRANSACTIONS = 1000
+
+NUMBER_OF_NODES = 10
 NUMBER_OF_CLIENTS = 2
-
-NUMBER_OF_TRANSACTIONS = 1000
 
 STANDARD_PORT_NODE = 2000
 STANDARD_PORT_CLIENT = 3000
