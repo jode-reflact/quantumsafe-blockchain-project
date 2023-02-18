@@ -37,7 +37,8 @@ container_env = {
     "TEST_DATE": time.strftime('%d-%m-%Y %H:%M:%S'),
     "TEST_NODE_COUNT": NUMBER_OF_NODES,
     "TEST_CLIENT_COUNT": NUMBER_OF_CLIENTS,
-    "HOST": "116.203.116.29"
+    "HOST": "116.203.116.29",
+    "PYTHONUNBUFFERED": "foobar"
     }
 
 # make sure all nodes are fresh / running / up to date
