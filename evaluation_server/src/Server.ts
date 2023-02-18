@@ -26,6 +26,7 @@ export class EvaluationServer {
         this.app.post("/completed_test", [], async (req: Request, res: Response) => {
             const testResult: TestResult = req.body;
             await this.testResultsCol.insertOne(testResult);
+            res.json('inserted')
             // TODO: end test
         })
         this.app.get("*", [], (req: Request, res: Response) => {
