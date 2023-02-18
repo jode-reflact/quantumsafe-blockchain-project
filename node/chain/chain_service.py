@@ -88,10 +88,15 @@ class ChainService:
     
     @staticmethod
     def check_test_completion():
+        print("check_test_completion")
         global TEST_COMPLETED
         global TEST_CONFIG
+        print("TEST CONFIG", TEST_CONFIG)
+        print("TEST COMPLETED", TEST_COMPLETED)
         if not TEST_COMPLETED:
             chain: Chain = ChainService.get_chain()
+            print("TRANSACTION COUNT", chain.transaction_count)
+            print("TEST TRANSACTION COUNT", TEST_CONFIG["TEST_TRANSACTION_COUNT"])
             if chain.transaction_count >= TEST_CONFIG["TEST_TRANSACTION_COUNT"]:
                 TEST_CONFIG["CHAIN"] = chain
                 requests.post(f"http://{TEST_CONFIG['HOST']}/completed_test",
