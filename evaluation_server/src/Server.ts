@@ -31,8 +31,8 @@ export class EvaluationServer {
         this.app.post("/completed_test", [], async (req: Request, res: Response) => {
             const testResult: TestResult = req.body;
             await this.testResultsCol.insertOne(testResult);
+            this.stopLocalTest();
             res.json('inserted')
-            // TODO: end test
         })
         this.app.get("*", [], (req: Request, res: Response) => {
             res.json('works')
@@ -51,6 +51,14 @@ export class EvaluationServer {
         const process = spawn('python', [p]);
         process.stdout.on('data', (data) => {
             console.log('Python Data:', data)
+        });
+    }
+    private async stopLocalTest() {
+        this.docker.listContainers((err, containers) => {
+            console.log('stopping all Containers');
+            containers.forEach((containerInfo) => {
+                this.docker.getContainer(containerInfo.Id).remove({ force: true });
+            });
         });
     }
 }
