@@ -15,8 +15,7 @@ export class EvaluationServer {
         this.initExpress()
     }
     private async initDB() {
-        const mongoClient = await MongoClient.connect("mongodb://" + process.env.dbuser + ":" + process.env.dbpass + "@localhost:27017/admin");
-        console.log('mongoConnection', mongoClient)
+        const mongoClient = await MongoClient.connect("mongodb://" + process.env.dbuser + ":" + process.env.dbpass + "@127.0.0.1:27017/admin");
         this.mainDb = mongoClient.db(process.env.dbname);
         this.testResultsCol = this.mainDb.collection("testResults");
     }
