@@ -47,7 +47,7 @@ export class EvaluationServer {
         console.log('python path', p)
         const process = spawn('python', [p]);
         process.stdout.on('data', (data) => {
-            console.log('Python Data:', data)
+            console.log('Python Data:', data.toString())
         });
     }
     private async stopLocalTest() {
