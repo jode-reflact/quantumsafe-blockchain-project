@@ -27,5 +27,8 @@ export class EvaluationServer {
             await this.testResultsCol.insertOne(testResult);
             // TODO: end test
         })
+        this.app.get("*", [], (req: Request, res: Response) => {
+            res.json('works')
+        });
     }
 }
