@@ -10,11 +10,13 @@ export class EvaluationServer {
     public testResultsCol: Collection<TestResult>
 
     constructor() {
+        console.log('start Up')
         this.initDB()
         this.initExpress()
     }
     private async initDB() {
         const mongoClient = await MongoClient.connect("mongodb://" + process.env.dbuser + ":" + process.env.dbpass + "@localhost:27017/admin");
+        console.log('mongoConnection', mongoClient)
         this.mainDb = mongoClient.db(process.env.dbname);
         this.testResultsCol = this.mainDb.collection("testResults");
     }
