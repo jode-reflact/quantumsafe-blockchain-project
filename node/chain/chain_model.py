@@ -22,7 +22,7 @@ class Chain(db.Model):
         transaction_count = 0
         for block in self.blocks:
             # subtract the block reward transaction
-            transactions_without_reward = list(filter(lambda t: t["sender"] != "THE BLOCKCHAIN", block.transactions))
+            transactions_without_reward = list(filter(lambda t: t.sender != "THE BLOCKCHAIN", block.transactions))
             transaction_count = transaction_count + len(transactions_without_reward)
         return transaction_count
 
