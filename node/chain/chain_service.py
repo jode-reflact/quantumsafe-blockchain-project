@@ -5,6 +5,7 @@ from node.block.block_model import Block
 from node.chain.chain_model import Chain
 from node.database import db
 from node.node.node_service import NodeService
+from node.transaction.confirmed_transaction_model import ConfirmedTransaction
 from node.transaction.pending_transaction_model import PendingTransaction
 
 TEST_CONFIG = {
@@ -56,6 +57,7 @@ class ChainService:
         if own_chain is not None:
             db.session.delete(own_chain)
             db.session.query(Block).delete() #for testing
+            db.session.query(ConfirmedTransaction).delete() # for testing
         db.session.add(other_chain)
         ChainService.__remove_confirmed_transactions_from_pending_transactions(new_chain=other_chain)
         db.session.commit()
