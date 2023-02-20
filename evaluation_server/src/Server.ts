@@ -4,6 +4,7 @@ import bodyParser from 'body-parser';
 import Docker from 'dockerode';
 import path from 'path'
 import { spawn } from 'child_process'
+import { setTimeout } from "timers/promises";
 
 export type TestResult = {
     CIPHER: Cipher,
@@ -67,6 +68,7 @@ export class EvaluationServer {
             await this.testResultsCol.insertOne(testResult);
             await this.scheduledTestsCol.deleteOne({ cipher: testResult.CIPHER, n_transactions: testResult.TEST_TRANSACTION_COUNT });
             this.stopLocalTest();
+            await setTimeout(120000) // wait 2 minutes
             this.runNextTest();
             res.json('inserted')
         })
