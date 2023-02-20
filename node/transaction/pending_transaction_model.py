@@ -18,7 +18,7 @@ class PendingTransaction(db.Model, BaseTransaction):
             timestamp=json["timestamp"],
             sender=json["sender"],
             receiver=json["receiver"],
-            amount=json["amount"],
+            amount= str(json["amount"]),
             signature=json["signature"],
             receivedAt=json["receivedAt"]
             )
@@ -27,6 +27,6 @@ class PendingTransaction(db.Model, BaseTransaction):
                 timestamp=json["timestamp"],
                 sender=json["sender"],
                 receiver=json["receiver"],
-                amount=json["amount"],
+                amount= str(json["amount"]),
                 signature=json["signature"],
             )
