@@ -33,4 +33,5 @@ class RsaCipher(Cipher):
     def verify(self, public_key: bytes, message_hash: SHA256Hash, signature: str):
 
         verifier = pkcs1_15.new(RSA.importKey(public_key))
-        return verifier.verify(message_hash, binascii.unhexlify(signature))
+        casted_message_hash = str(message_hash.hexdigest()).encode("utf8")
+        return verifier.verify(casted_message_hash, binascii.unhexlify(signature))
