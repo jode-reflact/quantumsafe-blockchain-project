@@ -30,6 +30,8 @@ class BaseTransaction:
         Throws an ValueError if transaction is not authentic.
         """
         transaction_hash = SHA256.new(str(self.get_representation_without_signature()).encode("utf8"))
+        print("Message to verify")
+        print(str(self.get_representation_without_signature()).encode("utf8"))
         cipher.verify(public_key=binascii.unhexlify(self.sender),
                       message_hash=transaction_hash,
                       signature=self.signature)
