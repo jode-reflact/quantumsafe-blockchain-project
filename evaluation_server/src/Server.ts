@@ -67,6 +67,7 @@ export class EvaluationServer {
             await this.testResultsCol.insertOne(testResult);
             await this.scheduledTestsCol.deleteOne({ cipher: testResult.CIPHER, n_transactions: testResult.TEST_TRANSACTION_COUNT });
             this.stopLocalTest();
+            this.runNextTest();
             res.json('inserted')
         })
         this.app.get("*", [], (req: Request, res: Response) => {
@@ -78,6 +79,7 @@ export class EvaluationServer {
     }
     private async runNextTest() {
         const nextConfig = await this.scheduledTestsCol.findOne();
+        console.log('runningNextTest', nextConfig);
         this.runLocalTestRunnerScript(nextConfig);
     }
     private async runLocalTestRunnerScript(config: TestConfig) {
@@ -89,12 +91,15 @@ export class EvaluationServer {
         });
     }
     private async stopLocalTest() {
-        this.docker.listContainers((err, containers) => {
-            console.log('stopping all Containers');
-            containers.forEach((containerInfo) => {
-                this.docker.getContainer(containerInfo.Id).remove({ force: true });
+        try {
+            this.docker.listContainers((err, containers) => {
+                console.log('stopping all Containers');
+                containers.forEach((containerInfo) => {
+                    this.docker.getContainer(containerInfo.Id).remove({ force: true });
+                });
             });
-            this.runNextTest();
-        });
+        } catch (error) {
+            console.error('Error on stopping local test', error);
+        }
     }
 }
