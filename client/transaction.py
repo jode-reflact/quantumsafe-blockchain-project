@@ -6,7 +6,7 @@ class ClientTransaction:
         self.sender_address = sender_address
         self.sender_private_key = sender_private_key
         self.receiver_address = receiver_address
-        self.amount = amount
+        self.amount = amount.__str__()
         self.timestamp = str(time.time())
 
     def __getattr__(self, attr):
