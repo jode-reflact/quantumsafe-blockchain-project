@@ -36,7 +36,6 @@ class Miner(object):
         self.BLOCK_SIZE = BLOCK_SIZE
         self.PORT = PORT
         self.node_id = str(uuid4()).replace("-", "")
-        print("Miner init")
         while True:
             try:
                 self.mine()

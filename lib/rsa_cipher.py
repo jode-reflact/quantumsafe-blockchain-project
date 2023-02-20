@@ -26,10 +26,6 @@ class RsaCipher(Cipher):
         private_key = RSA.importKey(binascii.unhexlify(private_key))
         signer = pkcs1_15.new(private_key)
         message_hash = SHA256.new(message.encode("utf8"))
-        print("Message to sign")
-        print(message.encode("utf8"))
-        print("Message hash")
-        print(message_hash.hexdigest().encode("utf8"))
         signature = signer.sign(message_hash)
 
         return binascii.hexlify(signature).decode("ascii")
@@ -37,6 +33,4 @@ class RsaCipher(Cipher):
     def verify(self, public_key: bytes, message_hash: SHA256Hash, signature: str):
 
         verifier = pkcs1_15.new(RSA.importKey(public_key))
-        print("Message hash")
-        print(message_hash.hexdigest().encode("utf8"))
         return verifier.verify(message_hash, binascii.unhexlify(signature))

@@ -35,7 +35,6 @@ if __name__ == "__main__":
     engine = create_engine("sqlite:////" + db_name, echo=False)
 
     insp = reflection.Inspector.from_engine(engine)
-    print(insp.get_table_names())
 
     session = Session(engine, autoflush=False)
 
