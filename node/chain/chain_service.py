@@ -67,6 +67,10 @@ class ChainService:
             print("Error on committing chain")
             print(other_chain.to_dict())
             db.session.rollback()
+            requests.post(f"http://{TEST_CONFIG['HOST']}/log_error",
+                        json={"error": "Error on committing chain"},
+                        headers={"Access-Control-Allow-Origin": "*"}
+                    )
 
     @staticmethod
     def __remove_confirmed_transactions_from_pending_transactions(new_chain):

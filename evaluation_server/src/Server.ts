@@ -64,14 +64,19 @@ export class EvaluationServer {
 
         this.app.post("/completed_test", [], async (req: Request, res: Response) => {
             const testResult: TestResult = req.body;
-            console.log('test Completed', testResult)
+            //console.log('test Completed', testResult)
             await this.testResultsCol.insertOne(testResult);
             await this.scheduledTestsCol.deleteOne({ cipher: testResult.CIPHER, n_transactions: testResult.TEST_TRANSACTION_COUNT });
             this.stopLocalTest();
             await setTimeout(120000) // wait 2 minutes
             this.runNextTest();
-            res.json('inserted')
+            res.json('inserted');
         })
+        this.app.post("/log_error", [], (req: Request, res: Response) => {
+            const body = req.body;
+            console.log('Error from node:', body.error);
+            res.json('logged');
+        });
         this.app.get("*", [], (req: Request, res: Response) => {
             res.json('works')
         });
@@ -86,11 +91,12 @@ export class EvaluationServer {
     }
     private async runLocalTestRunnerScript(config: TestConfig) {
         const p = path.resolve('../docker-runner.py')
-        console.log('python path', p)
         const process = spawn('python', [p, config.cipher, config.n_transactions + ""]);
+        /*
         process.stdout.on('data', (data) => {
             console.log('Python Data:', data.toString())
         });
+        */
     }
     private async stopLocalTest() {
         try {
