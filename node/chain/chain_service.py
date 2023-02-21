@@ -10,6 +10,7 @@ from node.transaction.pending_transaction_model import PendingTransaction
 
 TEST_CONFIG = {
     "CIPHER": os.environ['CIPHER'],
+    "CIPHER_TYPE": os.environ['CIPHER_TYPE'],
     "TEST_ID": os.environ['TEST_ID'],
     "TEST_TRANSACTION_COUNT": int(os.environ['TEST_TRANSACTION_COUNT']),
     "TEST_DATE": os.environ['TEST_DATE'],

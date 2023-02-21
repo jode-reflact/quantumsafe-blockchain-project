@@ -30,8 +30,16 @@ WALLET_CLIENTS = {}
 def getIPFromContainer(container):
     return container.attrs['NetworkSettings']['Networks']['bridge']['IPAddress']
 
+if CIPHER == "ecc":
+    CIPHER_TYPE = "P-256"
+elif CIPHER == "rsa":
+    CIPHER_TYPE = "3072"
+elif CIPHER == "dilithium":
+    CIPHER_TYPE = "Dilithium3"
+
 container_env = {
     "CIPHER":CIPHER,
+    "CIPHER_TYPE": CIPHER_TYPE,
     "TEST_ID": str(uuid.uuid4()).replace("-", ""),
     "TEST_TRANSACTION_COUNT": NUMBER_OF_TRANSACTIONS,
     "TEST_DATE": time.strftime('%d-%m-%Y %H:%M:%S'),
