@@ -20,7 +20,7 @@ export type TestConfig = { cipher: Cipher, n_transactions: number };
 
 export type Cipher = 'dilithium' | 'ecc' | 'rsa'
 const allCipher: Cipher[] = ['dilithium', 'ecc', 'rsa']
-const allTransactionCounts = [1000]
+const allTransactionCounts = [500]
 
 export class EvaluationServer {
     public app = express();
