@@ -41,21 +41,20 @@ container_env = {
     "PYTHONUNBUFFERED": "foobar"
     }
 
+# remove all clients and nodes
+all_container = client.containers.list()
+for container in all_container:
+    container.remove(force=True)
+
+time.sleep(30)
+
 # make sure all nodes are fresh / running / up to date
 for node_i in range(NUMBER_OF_NODES):
     node_index = node_i + 1
     node_name = 'node-' + node_index.__str__()
     node_port = STANDARD_PORT_NODE + node_index
     listFilter = {"name": '^/'+node_name+'$'}
-    containerList = client.containers.list(filters=listFilter,all=True)
-    if len(containerList) > 0:
-        container = containerList[0]
-        if len(container.image.tags) > 0 and container.image.tags[0] == IMAGE_NODE:
-            container.restart()
-            IP_NODES[node_name] = {'ip': getIPFromContainer(container), 'port': node_port}
-            continue
-        else:
-            container.remove(force=True)
+    
     client.containers.run(image=IMAGE_NODE, detach=True, name=node_name, ports={'80/tcp': node_port}, environment=container_env)
     container = client.containers.get(node_name)
     IP_NODES[node_name] = {'ip': getIPFromContainer(container), 'port': node_port}
@@ -67,16 +66,7 @@ for client_i in range(NUMBER_OF_CLIENTS):
     client_name = 'client-' + client_index.__str__()
     client_port = STANDARD_PORT_CLIENT + client_index
     listFilter = {"name": client_name}
-    containerList = client.containers.list(filters=listFilter,all=True)
-    if len(containerList) > 0:
-        container = containerList[0]
-        if len(container.image.tags) > 0 and container.image.tags[0] == IMAGE_CLIENT:
-            container.restart()
-            time.sleep(5)
-            IP_CLIENTS[client_name] = {'ip' :getIPFromContainer(container), 'port': client_port}
-            continue
-        else:
-            container.remove(force=True)
+    
     client.containers.run(image=IMAGE_CLIENT, detach=True, name=client_name, ports={'80/tcp': client_port}, environment=container_env)
     time.sleep(1)
     container = client.containers.get(client_name)
@@ -84,21 +74,6 @@ for client_i in range(NUMBER_OF_CLIENTS):
 print("IP_CLIENTS", IP_CLIENTS)
 
 time.sleep(30)
-
-# remove all clients and nodes above the node / client count
-all_container = client.containers.list()
-for container in all_container:
-    container_name = container.name
-    split = container_name.split("-")
-    index = int(split[-1])
-    if "node-" in container_name:
-        # is node container
-        if index > NUMBER_OF_NODES:
-            container.remove(force=True)
-    if "client-" in container_name:
-        # is client container
-        if index > NUMBER_OF_CLIENTS:
-            container.remove(force=True)
 
 #remove unused images called none
 images = client.images.list(filters={"dangling": True})
