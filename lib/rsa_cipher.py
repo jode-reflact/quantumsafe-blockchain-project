@@ -13,7 +13,7 @@ class RsaCipher(Cipher):
     def get_key_pair(self):
 
         random_gen = Crypto.Random.new().read
-        private_key = RSA.generate(1024, random_gen)
+        private_key = RSA.generate(3072, random_gen)
         public_key = private_key.publickey()
 
         private_key = binascii.hexlify(private_key.exportKey(format="DER")).decode("ascii")
