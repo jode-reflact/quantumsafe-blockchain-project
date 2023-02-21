@@ -74,7 +74,7 @@ export class EvaluationServer {
         })
         this.app.post("/log_error", [], (req: Request, res: Response) => {
             const body = req.body;
-            console.log('Error from node:', body.error);
+            console.log('Error from node:' + req.ip, body.error);
             res.json('logged');
         });
         this.app.get("*", [], (req: Request, res: Response) => {
