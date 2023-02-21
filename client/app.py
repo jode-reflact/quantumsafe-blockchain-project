@@ -15,6 +15,7 @@ cipher_algorithm = os.getenv("CIPHER")
 if cipher_algorithm == "ecc":
     cipher = EccCipher()
 elif cipher_algorithm == "rsa":
+    print("Now using RSA 3072")
     cipher = RsaCipher()
 elif cipher_algorithm == "dilithium":
     cipher = DilithiumCipher()
