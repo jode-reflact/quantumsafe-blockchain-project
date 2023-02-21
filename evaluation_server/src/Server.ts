@@ -20,7 +20,7 @@ export type TestConfig = { cipher: Cipher, n_transactions: number };
 
 export type Cipher = 'dilithium' | 'ecc' | 'rsa'
 const allCipher: Cipher[] = ['dilithium', 'ecc', 'rsa']
-const allTransactionCounts = [500]
+const allTransactionCounts = [100, 500, 1000, 2000]
 
 export class EvaluationServer {
     public app = express();
@@ -87,7 +87,12 @@ export class EvaluationServer {
     private async runNextTest() {
         const nextConfig = await this.scheduledTestsCol.findOne();
         console.log('runningNextTest', nextConfig);
-        this.runLocalTestRunnerScript(nextConfig);
+        if (nextConfig != null) {
+            this.runLocalTestRunnerScript(nextConfig);
+        } else {
+            this.setupDb();
+        }
+
     }
     private async runLocalTestRunnerScript(config: TestConfig) {
         const p = path.resolve('../docker-runner.py')
