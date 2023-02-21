@@ -56,11 +56,17 @@ class ChainService:
         # replace chain
         if own_chain is not None:
             db.session.delete(own_chain)
-            db.session.query(Block).delete() #for testing
-            db.session.query(ConfirmedTransaction).delete() # for testing
+            #db.session.query(Chain).delete()
+            #db.session.query(Block).delete() #for testing
+            #db.session.query(ConfirmedTransaction).delete() # for testing
         db.session.add(other_chain)
         ChainService.__remove_confirmed_transactions_from_pending_transactions(new_chain=other_chain)
-        db.session.commit()
+        try:  
+            db.session.commit()
+        except:
+            print("Error on committing chain")
+            print(other_chain.to_dict())
+            db.session.rollback()
 
     @staticmethod
     def __remove_confirmed_transactions_from_pending_transactions(new_chain):
