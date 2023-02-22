@@ -66,7 +66,6 @@ class ChainService:
             db.session.commit()
         except:
             print("Error on committing chain")
-            print(other_chain.to_dict())
             db.session.rollback()
             requests.post(f"http://{TEST_CONFIG['HOST']}/log_error",
                         json={"error": "Error on committing chain"},
