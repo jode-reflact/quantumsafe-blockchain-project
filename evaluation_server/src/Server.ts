@@ -1,10 +1,26 @@
 import express, { Request, Response } from 'express';
-import { Collection, Db, MongoClient } from 'mongodb';
+import { Collection, Db, MongoClient, ObjectId } from 'mongodb';
 import bodyParser from 'body-parser';
 import Docker from 'dockerode';
 import path from 'path'
 import { spawn } from 'child_process'
 import { setTimeout } from "timers/promises";
+
+export type Transaction = {
+    amount: string,
+    receivedAt: string,
+    receiver: string,
+    sender: string,
+    signature: string,
+    timestamp: string,
+};
+export type Block = {
+    index: number,
+    nonce: number,
+    previous_hash: string,
+    timestamp: string,
+    transactions: Transaction[]
+}
 
 export type TestResult = {
     CIPHER: Cipher,
@@ -13,7 +29,7 @@ export type TestResult = {
     TEST_TRANSACTION_COUNT: number,
     TEST_NODE_COUNT: number,
     TEST_CLIENT_COUNT: number,
-    CHAIN: { index: number, blocks: any[] }
+    CHAIN: { index: number, blocks: Block[], ids?: ObjectId[] }
 };
 
 export type TestConfig = { cipher: Cipher, n_transactions: number };
@@ -27,6 +43,7 @@ export class EvaluationServer {
     public mainDb: Db
     public testResultsCol: Collection<TestResult>
     public scheduledTestsCol: Collection<TestConfig>
+    public blocksCol: Collection<Block>
     public docker: Docker;
 
     constructor() {
@@ -40,7 +57,8 @@ export class EvaluationServer {
         this.mainDb = mongoClient.db(process.env.dbname);
         this.testResultsCol = this.mainDb.collection("testResults");
         this.scheduledTestsCol = this.mainDb.collection("scheduledTests");
-        await this.setupDb();
+        this.blocksCol = this.mainDb.collection("blocks");
+        //await this.setupDb();
     }
     private async setupDb() {
         const scheduledTestCount = await this.scheduledTestsCol.countDocuments();
@@ -65,6 +83,10 @@ export class EvaluationServer {
         this.app.post("/completed_test", [], async (req: Request, res: Response) => {
             const testResult: TestResult = req.body;
             //console.log('test Completed', testResult)
+            const result = await this.blocksCol.insertMany(testResult.CHAIN.blocks);
+            const ids: ObjectId[] = Object.values(result.insertedIds);
+            testResult.CHAIN.blocks = [];
+            testResult.CHAIN.ids = ids;
             await this.testResultsCol.insertOne(testResult);
             await this.scheduledTestsCol.deleteOne({ cipher: testResult.CIPHER, n_transactions: testResult.TEST_TRANSACTION_COUNT });
             this.stopLocalTest();
