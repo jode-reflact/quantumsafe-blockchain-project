@@ -58,7 +58,7 @@ export class EvaluationServer {
         this.testResultsCol = this.mainDb.collection("testResults");
         this.scheduledTestsCol = this.mainDb.collection("scheduledTests");
         this.blocksCol = this.mainDb.collection("blocks");
-        //await this.setupDb();
+        await this.setupDb();
     }
     private async setupDb() {
         const scheduledTestCount = await this.scheduledTestsCol.countDocuments();
