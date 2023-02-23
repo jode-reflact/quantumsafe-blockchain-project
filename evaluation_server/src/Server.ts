@@ -40,7 +40,7 @@ export class EvaluationServer {
         this.mainDb = mongoClient.db(process.env.dbname);
         this.testResultsCol = this.mainDb.collection("testResults");
         this.scheduledTestsCol = this.mainDb.collection("scheduledTests");
-        await this.setupDb();
+        //await this.setupDb();
     }
     private async setupDb() {
         const scheduledTestCount = await this.scheduledTestsCol.countDocuments();
