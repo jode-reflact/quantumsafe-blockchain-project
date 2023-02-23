@@ -59,7 +59,7 @@ export class EvaluationServer {
         this.runNextTest()
     }
     private async initExpress() {
-        this.app.use(bodyParser.json({ limit: "100mb" }));
+        this.app.use(bodyParser.json({ limit: "500mb" }));
         await this.app.listen(80)
 
         this.app.post("/completed_test", [], async (req: Request, res: Response) => {
