@@ -36,7 +36,8 @@ export type TestConfig = { cipher: Cipher, n_transactions: number };
 
 export type Cipher = 'dilithium' | 'ecc' | 'rsa'
 const allCipher: Cipher[] = ['dilithium', 'ecc', 'rsa']
-const allTransactionCounts = [100, 500, 1000, 2000]
+//const allTransactionCounts = [100, 500, 1000, 2000]
+const allTransactionCounts = [1000]
 
 export class EvaluationServer {
     public app = express();
@@ -74,7 +75,10 @@ export class EvaluationServer {
             }
             await this.scheduledTestsCol.insertMany(tests);
         }
-        this.runNextTest()
+        const testRunning = await this.isTestRunning()
+        if (!testRunning) {
+            this.runNextTest()
+        }
     }
     private async initExpress() {
         this.app.use(bodyParser.json({ limit: "500mb" }));
@@ -136,5 +140,16 @@ export class EvaluationServer {
         } catch (error) {
             console.error('Error on stopping local test', error);
         }
+    }
+    private async isTestRunning() {
+        return new Promise<boolean>((resolve, reject) => {
+            try {
+                this.docker.listContainers((err, containers) => {
+                    resolve(containers.length > 0)
+                });
+            } catch (error) {
+                resolve(false)
+            }
+        })
     }
 }
