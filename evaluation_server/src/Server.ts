@@ -127,11 +127,9 @@ export class EvaluationServer {
     private async runLocalTestRunnerScript(config: TestConfig) {
         const p = path.resolve('../docker-runner.py')
         const process = spawn('python', [p, config.cipher, config.n_transactions + "", config.use_cache + ""]);
-        /*
         process.stdout.on('data', (data) => {
             console.log('Python Data:', data.toString())
         });
-        */
     }
     private async stopLocalTest() {
         try {
