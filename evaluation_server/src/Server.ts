@@ -90,6 +90,7 @@ export class EvaluationServer {
         this.app.post("/completed_test", [], async (req: Request, res: Response) => {
             const testResult: TestResult = req.body;
             console.log('test Completed', testResult.USE_CACHE)
+            console.log('Bool Type', typeof (testResult.USE_CACHE))
             const result = await this.blocksCol.insertMany(testResult.CHAIN.blocks);
             const ids: ObjectId[] = Object.values(result.insertedIds);
             testResult.CHAIN.blocks = [];
