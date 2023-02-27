@@ -29,15 +29,18 @@ export type TestResult = {
     TEST_TRANSACTION_COUNT: number,
     TEST_NODE_COUNT: number,
     TEST_CLIENT_COUNT: number,
+    USE_CACHE: boolean,
     CHAIN: { index: number, blocks: Block[], ids?: ObjectId[] }
 };
 
-export type TestConfig = { cipher: Cipher, n_transactions: number };
+export type TestConfig = { cipher: Cipher, n_transactions: number, use_cache: boolean };
 
 export type Cipher = 'dilithium' | 'ecc' | 'rsa'
 const allCipher: Cipher[] = ['dilithium', 'ecc', 'rsa']
 //const allTransactionCounts = [100, 500, 1000, 2000]
 const allTransactionCounts = [1000]
+
+const use_cache = true;
 
 export class EvaluationServer {
     public app = express();
@@ -68,7 +71,7 @@ export class EvaluationServer {
             for (const cipher of allCipher) {
                 for (const n_transactions of allTransactionCounts) {
                     for (let i = 0; i < 10; i++) {
-                        const config: TestConfig = { cipher, n_transactions }
+                        const config: TestConfig = { cipher, n_transactions, use_cache }
                         tests.push(config)
                     }
                 }
@@ -89,10 +92,11 @@ export class EvaluationServer {
             //console.log('test Completed', testResult)
             const result = await this.blocksCol.insertMany(testResult.CHAIN.blocks);
             const ids: ObjectId[] = Object.values(result.insertedIds);
+            testResult.USE_CACHE = Boolean(testResult.USE_CACHE)
             testResult.CHAIN.blocks = [];
             testResult.CHAIN.ids = ids;
             await this.testResultsCol.insertOne(testResult);
-            await this.scheduledTestsCol.deleteOne({ cipher: testResult.CIPHER, n_transactions: testResult.TEST_TRANSACTION_COUNT });
+            await this.scheduledTestsCol.deleteOne({ cipher: testResult.CIPHER, n_transactions: testResult.TEST_TRANSACTION_COUNT, use_cache: testResult.USE_CACHE });
             this.stopLocalTest();
             await setTimeout(120000) // wait 2 minutes
             this.runNextTest();
@@ -122,7 +126,7 @@ export class EvaluationServer {
     }
     private async runLocalTestRunnerScript(config: TestConfig) {
         const p = path.resolve('../docker-runner.py')
-        const process = spawn('python', [p, config.cipher, config.n_transactions + ""]);
+        const process = spawn('python', [p, config.cipher, config.n_transactions + "", config.use_cache + ""]);
         /*
         process.stdout.on('data', (data) => {
             console.log('Python Data:', data.toString())

@@ -21,7 +21,7 @@ class PendingTransaction(db.Model, BaseTransaction):
         self.amount = amount
         self.signature = signature
         self.receivedAt = receivedAt
-        self.cached_representation = BaseTransaction.build_str_representation(
+        self.cached_representation = PendingTransaction.build_str_representation(
             sender=sender,
             receiver=receiver,
             amount=amount,

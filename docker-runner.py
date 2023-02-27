@@ -7,8 +7,9 @@ import sys
 
 client = docker.from_env()
 
-_, CIPHER, NUMBER_OF_TRANSACTIONS = sys.argv
+_, CIPHER, NUMBER_OF_TRANSACTIONS, USE_CACHE = sys.argv
 NUMBER_OF_TRANSACTIONS = int(NUMBER_OF_TRANSACTIONS)
+USE_CACHE = bool(USE_CACHE)
 #CIPHER = "dilithium"
 
 #NUMBER_OF_TRANSACTIONS = 1000
@@ -46,7 +47,8 @@ container_env = {
     "TEST_NODE_COUNT": NUMBER_OF_NODES,
     "TEST_CLIENT_COUNT": NUMBER_OF_CLIENTS,
     "HOST": "116.203.116.29",
-    "PYTHONUNBUFFERED": "foobar"
+    "PYTHONUNBUFFERED": "foobar",
+    "USE_CACHE": USE_CACHE
     }
 
 # remove all clients and nodes

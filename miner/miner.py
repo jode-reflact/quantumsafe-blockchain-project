@@ -29,11 +29,13 @@ class Miner(object):
     BLOCK_SIZE = None
     session = None
     PORT = None
+    USE_CACHE = None
 
-    def __init__(self, session: Session,PORT: int, DIFFICULTY, BLOCK_SIZE = None):
+    def __init__(self, session: Session,PORT: int, DIFFICULTY, BLOCK_SIZE = None, USE_CACHE=False):
         self.session = session
         self.DIFFICULTY = DIFFICULTY
         self.BLOCK_SIZE = BLOCK_SIZE
+        self.USE_CACHE = USE_CACHE
         self.PORT = PORT
         self.node_id = str(uuid4()).replace("-", "")
         while True:
@@ -82,14 +84,16 @@ class Miner(object):
 
         return nonce, transactions, previous_hash
 
-    def valid_proof(self, transactions, last_hash, nonce):
+    def valid_proof(self, transactions: List, last_hash, nonce):
         """
         Check if a hash value satisfies the mining conditions. This function is used within the
         proof_of_work function.
         """
 
-        transactions_without_signature = self.get_transactions_without_receivedAt(transactions)
-        guess = (str(transactions_without_signature) + str(last_hash) + str(nonce)).encode()
+        #transactions_without_signature = self.get_transactions_without_receivedAt(transactions)
+        #guess = (str(transactions_without_signature) + str(last_hash) + str(nonce)).encode()
+
+        guess = (self.get_transactions_string(transactions) + str(last_hash) + str(nonce)).encode()
         guess_hash = hashlib.sha256(guess).hexdigest()
 
         return guess_hash[:self.DIFFICULTY] == "0" * self.DIFFICULTY
@@ -108,12 +112,22 @@ class Miner(object):
         else:
             return 1
     def get_transactions_for_next_block(self):
-        if self.BLOCK_SIZE is not None:
-            return self.session.query(PendingTransaction).limit(self.BLOCK_SIZE).all()
+        if self.USE_CACHE:
+            if self.BLOCK_SIZE is not None:
+                return self.session.query(PendingTransaction.cached_representation).limit(self.BLOCK_SIZE).all()
+            else:
+                return self.session.query(PendingTransaction.cached_representation).all()
         else:
-            return self.session.query(PendingTransaction).all()
-    def get_transactions_without_receivedAt(self, transactions: List[PendingTransaction]):
-        return [tx.get_representation_without_receivedAt() for tx in transactions]
+            if self.BLOCK_SIZE is not None:
+                return self.session.query(PendingTransaction).limit(self.BLOCK_SIZE).all()
+            else:
+                return self.session.query(PendingTransaction).all()
+    def get_transactions_string(self, transactions: List[PendingTransaction]):
+        if self.USE_CACHE:
+            return str(transactions)
+        else:
+            return str([tx.get_representation_without_receivedAt() for tx in transactions])
+
     def add_block(self, nonce: int, transactions: List[PendingTransaction], previous_hash: str):
         new_index = self.get_new_block_index()
         print("New index", new_index)

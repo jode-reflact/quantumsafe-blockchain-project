@@ -24,9 +24,11 @@ if __name__ == "__main__":
     PORT = int(PORT)
     DIFFICULTY = os.getenv("DIFFICULTY")
     BLOCK_SIZE = os.getenv("BLOCK_SIZE")
+    USE_CACHE = os.getenv("USE_CACHE", default="False")
 
     DIFFICULTY = int(DIFFICULTY)
     BLOCK_SIZE = int(BLOCK_SIZE)
+    USE_CACHE = bool(USE_CACHE)
 
     time.sleep(10)
 
@@ -38,4 +40,4 @@ if __name__ == "__main__":
 
     session = Session(engine, autoflush=False)
 
-    miner = Miner(session=session, PORT=PORT, DIFFICULTY=DIFFICULTY, BLOCK_SIZE=BLOCK_SIZE)
+    miner = Miner(session=session, PORT=PORT, DIFFICULTY=DIFFICULTY, BLOCK_SIZE=BLOCK_SIZE, USE_CACHE=USE_CACHE)
