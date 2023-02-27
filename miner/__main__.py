@@ -28,7 +28,7 @@ if __name__ == "__main__":
 
     DIFFICULTY = int(DIFFICULTY)
     BLOCK_SIZE = int(BLOCK_SIZE)
-    USE_CACHE = (USE_CACHE == 'true')
+    USE_CACHE = (USE_CACHE == 'true') | (USE_CACHE == 'True')
     print("USE_CACHE", USE_CACHE)
     time.sleep(10)
 

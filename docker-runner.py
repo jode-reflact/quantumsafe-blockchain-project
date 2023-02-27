@@ -9,7 +9,7 @@ client = docker.from_env()
 
 _, CIPHER, NUMBER_OF_TRANSACTIONS, USE_CACHE = sys.argv
 NUMBER_OF_TRANSACTIONS = int(NUMBER_OF_TRANSACTIONS)
-USE_CACHE = (USE_CACHE == 'true')
+USE_CACHE = (USE_CACHE == 'true') | (USE_CACHE == 'True')
 #CIPHER = "dilithium"
 
 #NUMBER_OF_TRANSACTIONS = 1000
