@@ -8,6 +8,9 @@ from node.node.node_service import NodeService
 from node.transaction.confirmed_transaction_model import ConfirmedTransaction
 from node.transaction.pending_transaction_model import PendingTransaction
 
+USE_CACHE = os.environ['USE_CACHE']
+USE_CACHE = (USE_CACHE == 'true') | (USE_CACHE == 'True')
+
 TEST_CONFIG = {
     "CIPHER": os.environ['CIPHER'],
     "CIPHER_TYPE": os.environ['CIPHER_TYPE'],
@@ -17,7 +20,7 @@ TEST_CONFIG = {
     "TEST_NODE_COUNT": int(os.environ['TEST_NODE_COUNT']),
     "TEST_CLIENT_COUNT": int(os.environ['TEST_CLIENT_COUNT']),
     "HOST": os.environ['HOST'],
-    "USE_CACHE": bool(os.environ['USE_CACHE']),
+    "USE_CACHE": USE_CACHE,
     }
 
 TEST_COMPLETED = False
