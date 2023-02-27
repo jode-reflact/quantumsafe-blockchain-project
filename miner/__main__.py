@@ -28,8 +28,8 @@ if __name__ == "__main__":
 
     DIFFICULTY = int(DIFFICULTY)
     BLOCK_SIZE = int(BLOCK_SIZE)
-    USE_CACHE = bool(USE_CACHE)
-
+    USE_CACHE = (USE_CACHE == 'true')
+    print("USE_CACHE", USE_CACHE)
     time.sleep(10)
 
     db_name = f"node_{str(PORT)}.db"
