@@ -14,7 +14,7 @@ class PendingTransaction(db.Model, BaseTransaction):
     receivedAt = db.Column(db.String)
     cached_representation = db.Column(db.String)
 
-    def __init__(self, timestamp, sender, receiver, amount, signature, receivedAt):
+    def __init__(self, timestamp, sender, receiver, amount, signature, receivedAt = None):
         self.timestamp = timestamp
         self.sender = sender
         self.receiver = receiver
