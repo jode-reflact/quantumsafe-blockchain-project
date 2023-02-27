@@ -89,10 +89,9 @@ export class EvaluationServer {
 
         this.app.post("/completed_test", [], async (req: Request, res: Response) => {
             const testResult: TestResult = req.body;
-            //console.log('test Completed', testResult)
+            console.log('test Completed', testResult.USE_CACHE)
             const result = await this.blocksCol.insertMany(testResult.CHAIN.blocks);
             const ids: ObjectId[] = Object.values(result.insertedIds);
-            testResult.USE_CACHE = Boolean(testResult.USE_CACHE)
             testResult.CHAIN.blocks = [];
             testResult.CHAIN.ids = ids;
             await this.testResultsCol.insertOne(testResult);
