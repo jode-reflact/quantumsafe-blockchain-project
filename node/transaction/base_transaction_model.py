@@ -16,7 +16,7 @@ class BaseTransaction:
         self.receivedAt = receivedAt
 
     def __repr__(self):
-        return f"PendingTransaction(\
+        return f"Transaction(\
             timestamp={self.timestamp}, \
             amount={self.amount}, \
             sender={self.sender}, \
@@ -51,6 +51,7 @@ class BaseTransaction:
                 "signature": self.signature
             }
         )
+
     def get_representation_without_signature(self):
         """Transaction Representation without receivedAt.
         Used to mine and verify proof of work nonce.
