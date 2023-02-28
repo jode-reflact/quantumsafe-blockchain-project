@@ -119,5 +119,5 @@ class ChainService:
                         headers={"Access-Control-Allow-Origin": "*"}
                     )
                     TEST_COMPLETED = True
-            except:
-                print("Chain and Test not valid")
+            except Exception as e:
+                print("Chain and Test not valid", e)
