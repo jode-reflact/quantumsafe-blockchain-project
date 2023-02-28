@@ -79,6 +79,7 @@ class Miner(object):
         nonce = 0
         transactions = self.get_transactions_for_next_block(self.USE_CACHE)
         print("Transactions", transactions)
+        print("Length", len(transactions))
         previous_hash = self.get_last_block_hash()
         while self.valid_proof(transactions, previous_hash, nonce) is False:
             nonce = random.randint(0, 100000000)
