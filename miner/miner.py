@@ -99,7 +99,6 @@ class Miner(object):
         #guess = (str(transactions_without_signature) + str(last_hash) + str(nonce)).encode()
 
         guess = (self.get_transactions_string(transactions) + str(last_hash) + str(nonce)).encode()
-        print("Guess", guess)
         guess_hash = hashlib.sha256(guess).hexdigest()
 
         return guess_hash[:self.DIFFICULTY] == "0" * self.DIFFICULTY
