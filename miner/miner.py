@@ -78,6 +78,7 @@ class Miner(object):
         """
         nonce = 0
         transactions = self.get_transactions_for_next_block()
+        print("Transactions next block", transactions)
         previous_hash = self.get_last_block_hash()
         while self.valid_proof(transactions, previous_hash, nonce) is False:
             nonce = random.randint(0, 100000000)
@@ -133,6 +134,7 @@ class Miner(object):
     def add_block(self, nonce: int, transactions: List[PendingTransaction], previous_hash: str):
         new_index = self.get_new_block_index()
         print("New index", new_index)
+        print("Transaction", transactions)
         block = Block.from_json({
             "index": new_index,
             "timestamp": time(),
