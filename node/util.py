@@ -14,7 +14,6 @@ USE_CACHE = (USE_CACHE == 'true') | (USE_CACHE == 'True')
 
 def validate_pow(transactions: List[ConfirmedTransaction], previous_hash, nonce):
     guess = (get_transactions_string(transactions) + str(previous_hash) + str(nonce)).encode()
-    print("Guess", guess)
     guess_hash = hashlib.sha256(guess).hexdigest()
 
     if guess_hash[:DIFFICULTY] == "0" * DIFFICULTY:
