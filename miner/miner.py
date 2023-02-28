@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 import binascii
 import random
 from typing import List
-from sqlalchemy import delete
+from sqlalchemy import delete, select
 
 from Crypto.Hash import SHA256
 
@@ -78,7 +78,6 @@ class Miner(object):
         """
         nonce = 0
         transactions = self.get_transactions_for_next_block(self.USE_CACHE)
-        print("Transactions", transactions[0])
         previous_hash = self.get_last_block_hash()
         while self.valid_proof(transactions, previous_hash, nonce) is False:
             nonce = random.randint(0, 100000000)
@@ -120,9 +119,11 @@ class Miner(object):
     def get_transactions_for_next_block(self, use_cache: bool):
         if use_cache:
             if self.BLOCK_SIZE is not None:
-                return self.session.query(PendingTransaction.cached_representation).limit(self.BLOCK_SIZE).all()
+                #return self.session.query(PendingTransaction.cached_representation).limit(self.BLOCK_SIZE).all()
+                return self.session.scalars(select(PendingTransaction.cached_representation).limit(self.BLOCK_SIZE)).all()
             else:
-                return self.session.query(PendingTransaction.cached_representation).all()
+                #return self.session.query(PendingTransaction.cached_representation).all()
+                return self.session.scalars(select(PendingTransaction.cached_representation)).all()
         else:
             if self.BLOCK_SIZE is not None:
                 return self.session.query(PendingTransaction).limit(self.BLOCK_SIZE).all()
