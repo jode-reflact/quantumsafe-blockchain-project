@@ -77,14 +77,16 @@ class Miner(object):
         :return: <int>
         """
         nonce = 0
-        transactions = self.get_transactions_for_next_block()
-        print("Transactions next block", transactions)
+        transactions = self.get_transactions_for_next_block(self.USE_CACHE)
         previous_hash = self.get_last_block_hash()
         while self.valid_proof(transactions, previous_hash, nonce) is False:
             nonce = random.randint(0, 100000000)
-            transactions = self.get_transactions_for_next_block()
+            transactions = self.get_transactions_for_next_block(self.USE_CACHE)
             previous_hash = self.get_last_block_hash()
 
+        # if using cache we have to get the transactions instead of the string representation before building the block
+        if self.USE_CACHE:
+            transactions = self.get_transactions_for_next_block(False)
         return nonce, transactions, previous_hash
 
     def valid_proof(self, transactions: List, last_hash, nonce):
@@ -114,8 +116,8 @@ class Miner(object):
             return chain.index
         else:
             return 1
-    def get_transactions_for_next_block(self):
-        if self.USE_CACHE:
+    def get_transactions_for_next_block(self, use_cache: bool):
+        if use_cache:
             if self.BLOCK_SIZE is not None:
                 return self.session.query(PendingTransaction.cached_representation).limit(self.BLOCK_SIZE).all()
             else:
@@ -134,7 +136,6 @@ class Miner(object):
     def add_block(self, nonce: int, transactions: List[PendingTransaction], previous_hash: str):
         new_index = self.get_new_block_index()
         print("New index", new_index)
-        print("Transaction", transactions)
         block = Block.from_json({
             "index": new_index,
             "timestamp": time(),
@@ -142,7 +143,6 @@ class Miner(object):
             "previous_hash": previous_hash,
             "transactions": [tx.to_dict() for tx in transactions]
         })
-        print("Block Timestamp", block.timestamp)
         block.chain_index = self.get_chain_index()
         self.session.add(block)
         self.delete_pending_transactions(transactions)
