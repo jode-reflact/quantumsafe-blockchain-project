@@ -43,7 +43,9 @@ class Miner(object):
                 self.mine()
             except KeyboardInterrupt:
                 sys.exit()
-            except:
+            except Exception as e:
+                print("Exception in Miner:", e)
+                print(str(e))
                 self.session.rollback()
 
     def mine(self):
@@ -138,6 +140,7 @@ class Miner(object):
             "previous_hash": previous_hash,
             "transactions": [tx.to_dict() for tx in transactions]
         })
+        print("Block Timestamp", block.timestamp)
         block.chain_index = self.get_chain_index()
         self.session.add(block)
         self.delete_pending_transactions(transactions)
