@@ -21,6 +21,7 @@ TEST_CONFIG = {
     "TEST_CLIENT_COUNT": int(os.environ['TEST_CLIENT_COUNT']),
     "HOST": os.environ['HOST'],
     "USE_CACHE": USE_CACHE,
+    "BLOCK_SIZE": int(os.environ['BLOCK_SIZE']),
     }
 
 TEST_COMPLETED = False

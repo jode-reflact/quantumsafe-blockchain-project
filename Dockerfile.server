@@ -22,7 +22,6 @@ RUN pip install -r requirements.txt
 COPY . /app
 
 ENV DIFFICULTY=4
-ENV BLOCK_SIZE=9
 
 RUN chmod a+x runNodeAndClient.sh
 CMD ["./runNodeAndClient.sh", "80"]
