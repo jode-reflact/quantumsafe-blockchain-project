@@ -9,10 +9,11 @@ from node.transaction.confirmed_transaction_model import ConfirmedTransaction
 DIFFICULTY = os.getenv("DIFFICULTY", 4)
 DIFFICULTY = int(DIFFICULTY)
 
+USE_CACHE = os.getenv("USE_CACHE", default="False")
+USE_CACHE = (USE_CACHE == 'true') | (USE_CACHE == 'True')
 
 def validate_pow(transactions: List[ConfirmedTransaction], previous_hash, nonce):
-    transactions_without_signature = [tx.get_representation_without_receivedAt() for tx in transactions]
-    guess = (str(transactions_without_signature) + str(previous_hash) + str(nonce)).encode()
+    guess = (get_transactions_string(transactions) + str(previous_hash) + str(nonce)).encode()
     guess_hash = hashlib.sha256(guess).hexdigest()
 
     if guess_hash[:DIFFICULTY] == "0" * DIFFICULTY:
@@ -20,6 +21,11 @@ def validate_pow(transactions: List[ConfirmedTransaction], previous_hash, nonce)
 
     raise Exception(f"Proof of work not valid.")
 
+def get_transactions_string(transactions: List[ConfirmedTransaction]):
+        if USE_CACHE:
+            return str([str(tx.get_representation_without_receivedAt()) for tx in transactions])
+        else:
+            return str([tx.get_representation_without_receivedAt() for tx in transactions])
 
 def hash_block(block):
     """
