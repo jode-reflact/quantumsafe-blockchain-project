@@ -55,7 +55,7 @@ class BaseTransaction:
     def get_representation_without_signature(self):
         """Transaction Representation without receivedAt.
         Used to mine and verify proof of work nonce.
-        Received At cannot be used because its not filled at mining
+        Received At is not used because its not needed for mining
 
         Returns:
             _type_: _description_
