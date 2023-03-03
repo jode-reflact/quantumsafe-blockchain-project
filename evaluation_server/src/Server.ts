@@ -45,7 +45,7 @@ export type Cipher = 'dilithium' | 'ecc' | 'rsa'
 const allCipher: Cipher[] = ['dilithium', 'ecc', 'rsa']
 //const allTransactionCounts = [100, 500, 1000, 2000]
 const allTransactionCounts = [1000]
-const allBlockSizes = [19, 29, 39, 49]
+const allBlockSizes = [59, 69]
 
 const use_cache = true;
 
