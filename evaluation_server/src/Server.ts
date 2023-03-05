@@ -42,10 +42,12 @@ export type TestConfig = {
 };
 
 export type Cipher = 'dilithium' | 'ecc' | 'rsa'
-const allCipher: Cipher[] = ['dilithium', 'ecc', 'rsa']
+//const allCipher: Cipher[] = ['dilithium', 'ecc', 'rsa']
+const allCipher: Cipher[] = []
 //const allTransactionCounts = [100, 500, 1000, 2000]
-const allTransactionCounts = [1000]
-const allBlockSizes = [79, 89, 99]
+const allTransactionCounts: number[] = []
+//const allBlockSizes = [79, 89, 99]
+const allBlockSizes: number[] = []
 
 const use_cache = true;
 
@@ -85,7 +87,9 @@ export class EvaluationServer {
                     }
                 }
             }
-            await this.scheduledTestsCol.insertMany(tests);
+            if (tests.length > 0) {
+                await this.scheduledTestsCol.insertMany(tests);
+            }
         }
         const testRunning = await this.isTestRunning()
         if (!testRunning) {
