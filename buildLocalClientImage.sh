@@ -1,0 +1,1 @@
+docker build -t blockchain-client:latest -f Dockerfile.client .
